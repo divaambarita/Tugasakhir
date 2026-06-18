@@ -1,0 +1,8 @@
+rootProject.name = 'com.simbaci.mobile'
+apply from: file("../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesSettingsGradle(settings)
+include ':app'
+includeBuild('../node_modules/@react-native/gradle-plugin')
+
+// Manual linking: @react-native-community/datetimepicker (RN CLI reports android: null)
+include ':react-native-community_datetimepicker'
+project(':react-native-community_datetimepicker').projectDir = new File(rootProject.projectDir, '../node_modules/@react-native-community/datetimepicker/android')

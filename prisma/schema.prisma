@@ -1,0 +1,389 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model admin {
+  idAdmin   Int       @id
+  nama      String    @db.VarChar(100)
+  email     String?   @db.VarChar(100)
+  noTelp    String    @unique @db.VarChar(16)
+  jabatan   String?   @db.VarChar(255)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+}
+
+model akun {
+  idAkun    Int       @id @default(autoincrement())
+  nama      String    @db.VarChar(100)
+  email     String?   @db.VarChar(100)
+  noTelp    String    @unique @db.VarChar(16)
+  roleId    Int
+  password  String?   @db.Text
+  foto      String?   @db.Text
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  role      role      @relation(fields: [roleId], references: [idRole], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([roleId], map: "Akun_roleId_fkey")
+}
+
+model approver {
+  idApprover    Int       @id @default(autoincrement())
+  userId        Int
+  typePengajuan String    @db.VarChar(200)
+  roleId        Int
+  roleName      String    @db.VarChar(150)
+  status        String    @db.VarChar(150)
+  updatedBy     Int?
+  keterangan    String?   @db.Text
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+  bsu           bsu       @relation(fields: [userId], references: [idBsu], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([userId], map: "Approver_userId_fkey")
+}
+
+model bsu {
+  idBsu             Int              @id
+  nama              String           @db.VarChar(100)
+  email             String?          @db.VarChar(100)
+  noTelp            String           @unique @db.VarChar(20)
+  alamat            String?          @db.Text
+  kecamatan         String?          @db.VarChar(50)
+  kelurahan         String?          @db.VarChar(50)
+  saldo             Float?           @default(0)
+  status            String?          @db.VarChar(25)
+  skPendirian       String?          @db.Text
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  deletedAt         DateTime?
+  isActive          Int?             @default(0)
+  approver          approver[]
+  hasilverifikasi   hasilverifikasi?
+  jadwal            jadwal?
+  nasabah           nasabah[]
+  pengeluaran       pengeluaran[]
+  pemasukan         pemasukan[]
+  penjualan         penjualan[]
+  pengurus          pengurus[]
+}
+
+model dlh {
+  idDlh     Int       @id
+  nama      String    @db.VarChar(100)
+  email     String?   @db.VarChar(100)
+  noTelp    String    @unique @db.VarChar(16)
+  jabatan   String?   @db.VarChar(255)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+}
+
+model hargasampahbsi {
+  idHargaSampahBsi Int         @id @default(autoincrement())
+  harga            Float
+  jenisSampahId    Int         @unique
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  deletedAt        DateTime?
+  jenissampah      jenissampah @relation(fields: [jenisSampahId], references: [idJenisSampah])
+}
+
+model hargasampahbsu {
+  idHargaSampahBsu Int       @id @default(autoincrement())
+  harga            Float
+  jenisSampahId    Int
+  createdAt        DateTime  @default(now())
+  bsuId            Int
+  updatedAt        DateTime  @updatedAt
+  deletedAt        DateTime?
+}
+
+model hasilverifikasi {
+  idHasilVerifikasi Int       @id @default(autoincrement())
+  lokasi            String    @db.Text
+  luasTempat        String    @db.Text
+  kondisiBangunan   String    @db.Text
+  fasilitas         String    @db.Text
+  fotoKunjungan     String    @db.Text
+  bsuId             Int       @unique
+  volunteerId       Int
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime?
+  bsu               bsu       @relation(fields: [bsuId], references: [idBsu], onDelete: NoAction, onUpdate: NoAction)
+  volunteer         volunteer @relation(fields: [volunteerId], references: [idVolunteer], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([volunteerId], map: "hasilverifikasi_volunteerId_fkey")
+}
+
+model jabatan {
+  idJabatan Int     @id @default(autoincrement())
+  nama      String? @db.VarChar(100)
+  bsuId     Int?
+}
+
+model jadwal {
+  idJadwal   Int       @id @default(autoincrement())
+  hari       String    @db.Text
+  jamMulai   DateTime  @db.Time(0)
+  jamSelesai DateTime  @db.Time(0)
+  bsuId      Int       @unique
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
+  bsu        bsu       @relation(fields: [bsuId], references: [idBsu], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model jenissampah {
+  idJenisSampah   Int              @id @default(autoincrement())
+  nama            String           @db.VarChar(150)
+  kategori        String           @db.VarChar(100)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  deletedAt       DateTime?
+  hargasampahbsi  hargasampahbsi?
+  itempesanan     itempesanan?
+  transaksidetail transaksidetail[]
+  penjualan       penjualan[]
+}
+
+model mitra {
+  idMitra          Int       @id
+  namaPerusahaan   String?   @db.VarChar(150)
+  email            String?   @db.VarChar(100)
+  noTelp           String    @unique @db.VarChar(16)
+  alamatPerusahaan String?   @db.Text
+  kelurahan        String?   @db.VarChar(50)
+  kecamatan        String?   @db.VarChar(50)
+  jenisMitra       String?   @db.VarChar(100)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  deletedAt        DateTime?
+  jenisInstansi    String?   @db.VarChar(100)
+}
+
+model mstrjenisinstansi {
+  idJenisInstansi Int     @id @default(autoincrement())
+  nama            String? @db.VarChar(255)
+}
+
+model mstrjenismitra {
+  idJenisMitra Int     @id @default(autoincrement())
+  nama         String? @db.VarChar(255)
+}
+
+model mstrkategorisampah {
+  idKategoriSampah Int     @id @default(autoincrement())
+  nama             String? @db.VarChar(255)
+  emisiKarbon      Float?  @default(0)
+}
+
+model nasabah {
+  idNasabah    Int         @id @default(autoincrement())
+  nomorNasabah String
+  nama         String      @db.VarChar(100)
+  email        String?     @db.VarChar(100)
+  jenisKelamin String?     @db.VarChar(25)
+  Nik          String      @db.VarChar(20)
+  noTelp       String      @unique @db.VarChar(20)
+  alamat       String?     @db.Text
+  tempatLahir  String      @db.VarChar(50)
+  tglLahir     DateTime    @db.Date
+  kelurahan    String?     @db.VarChar(50)
+  kecamatan    String?     @db.VarChar(50)
+  saldo        Float?      @default(0)
+  bsuId        Int
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  deletedAt    DateTime?
+  bsu          bsu         @relation(fields: [bsuId], references: [idBsu], onDelete: NoAction, onUpdate: NoAction)
+  transaksi    transaksi[]
+
+  @@index([bsuId], map: "Nasabah_bsuId_fkey")
+}
+
+model pejabateswka {
+  idPejabatEswka Int       @id
+  nama           String    @db.VarChar(100)
+  email          String?   @db.VarChar(100)
+  noTelp         String    @unique @db.VarChar(16)
+  jabatan        String?   @db.VarChar(255)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+}
+
+model pengurus {
+  idPengurus   Int       @id
+  namaPengurus String    @db.VarChar(100)
+  email        String?   @db.VarChar(100)
+  noTelp       String    @unique @db.VarChar(20)
+  jenisKelamin String?   @db.VarChar(25)
+  alamat       String?   @db.Text
+  tempatLahir  String    @db.VarChar(50)
+  tglLahir     DateTime  @db.Date
+  pekerjaan    String?   @db.Text
+  jabatan      String?   @db.Text
+  ktp          String?   @db.Text
+  bsuId        Int
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+  bsu          bsu       @relation(fields: [bsuId], references: [idBsu], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([bsuId], map: "Pengurus_bsuId_fkey")
+}
+
+model pengeluaran {
+  tanggal            DateTime
+  tujuan             String
+  saldo              Float
+  bukti              String
+  totalPengeluaran   Float
+  createdAt          DateTime @default(now())
+  idPengeluaran      Int      @id @default(autoincrement())
+  bsuId              Int
+  bsu                bsu      @relation(fields: [bsuId], references: [idBsu], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([bsuId], map: "Pengeluaran_bsuId_fkey")
+}
+
+model pemasukan {
+  tanggal            DateTime
+  tujuan             String
+  saldo              Float
+  keterangan         String
+  totalPemasukan     Float
+  createdAt          DateTime @default(now())
+  idPemasukan        Int      @id @default(autoincrement())
+  bsuId              Int
+  bsu                bsu      @relation(fields: [bsuId], references: [idBsu], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([bsuId], map: "Pemasukan_bsuId_fkey")
+}
+
+model penjualan {
+  tanggal            DateTime
+  nama               String
+  berat              Float
+  harga              Float
+  totalPenjualan     Float
+  createdAt          DateTime     @default(now())
+  idPenjualan        Int          @id @default(autoincrement())
+  bsuId              Int
+  bsu                bsu          @relation(fields: [bsuId], references: [idBsu], onDelete: NoAction, onUpdate: NoAction)
+  jenisSampahId      Int
+  jenissampah        jenissampah  @relation(fields: [jenisSampahId], references: [idJenisSampah], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([bsuId], map: "Penjualan_bsuId_fkey")
+  @@index([jenisSampahId], map: "Penjualan_jenisSampahId_fkey")
+}
+
+model role {
+  idRole    Int       @id @default(autoincrement())
+  nama      String?   @db.VarChar(100)
+  hakAkses  String?   @db.Text
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  akun      akun[]
+}
+
+model volunteer {
+  idVolunteer     Int               @id
+  nama            String            @db.VarChar(100)
+  email           String?           @db.VarChar(100)
+  noTelp          String            @unique @db.VarChar(16)
+  jabatan         String?           @db.VarChar(255)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  deletedAt       DateTime?
+  hasilverifikasi hasilverifikasi[]
+}
+
+model transaksi {
+  idTransaksi     Int               @id @default(autoincrement())
+  tanggal         DateTime
+  nasabahId       Int
+  totalHarga      Float?
+  buktiFoto       String?           @db.Text
+  createdAt       DateTime          @default(now())
+  nasabah         nasabah           @relation(fields: [nasabahId], references: [idNasabah], onDelete: NoAction, onUpdate: NoAction)
+  transaksidetail transaksidetail[]
+
+  @@index([nasabahId], map: "transaksi_nasabahId_fkey")
+}
+
+model transaksidetail {
+  berat         Float?
+  hargaTotal    Float?
+  transaksiId   Int
+  jenisSampahId Int
+  jenissampah   jenissampah @relation(fields: [jenisSampahId], references: [idJenisSampah], onDelete: NoAction, onUpdate: NoAction)
+  transaksi     transaksi   @relation(fields: [transaksiId], references: [idTransaksi], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([transaksiId, jenisSampahId])
+  @@index([jenisSampahId], map: "transaksidetail_jenisSampahId_fkey")
+}
+
+model pembeli {
+  idPembeli Int       @id
+  nama      String    @db.VarChar(100)
+  email     String?   @db.VarChar(100)
+  noTelp    String    @unique @db.VarChar(100)
+  createdAt DateTime  @default(now())
+  updateAt  DateTime  @updatedAt
+  deletedAt DateTime?
+}
+
+model pesanan {
+  idPesanan   Int          @id
+  totalHarga  Float
+  status      Status
+  createdAt   DateTime     @default(now())
+  itempesanan itempesanan?
+}
+
+model pembayaran {
+  idPembayaran     Int      @id @default(autoincrement())
+  jumlah           Decimal
+  metodePembayaran String   @db.VarChar(50)
+  statusPembayaran String   @db.VarChar(50)
+  createdAt        DateTime @default(now())
+}
+
+model itempesanan {
+  idItemPesanan Int         @id
+  kuantitas     Int
+  jenisSampahId Int         @unique
+  pesananId     Int         @unique
+  jenissampah   jenissampah @relation(fields: [jenisSampahId], references: [idJenisSampah], onDelete: NoAction, onUpdate: NoAction)
+  pesanan       pesanan     @relation(fields: [pesananId], references: [idPesanan], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model penarikan {
+  idPenarikan       Int       @id @default(autoincrement())
+  nasabahId         Int
+  tanggalPenarikan  DateTime  @default(now())
+  totalPenarikan    Float
+  metodePembayaran  String    @db.VarChar(50)
+  statusKonfirmasi  String    @db.VarChar(50)
+  tanggalKonfirmasi DateTime?
+  
+  @@index([nasabahId], map: "Penarikan_nasabahId_fkey")
+}
+
+enum Status {
+  GAGAL
+  DIPROSES
+  BERHASIL
+}
