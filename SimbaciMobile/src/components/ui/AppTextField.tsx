@@ -44,15 +44,17 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: theme.colors.outlineVariant,
-    borderRadius: theme.radius.sm,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    minHeight: 48,
+    borderRadius: theme.radius.md,
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+    minHeight: 50,
     backgroundColor: theme.colors.surface,
     color: theme.colors.onSurface,
+    fontWeight: '700',
   },
   inputError: {
     borderColor: theme.colors.errorOutline,
+    backgroundColor: '#FFF7F7',
   },
   errorText: {
     marginTop: 6,

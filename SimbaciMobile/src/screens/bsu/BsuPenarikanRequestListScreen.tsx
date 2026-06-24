@@ -152,7 +152,7 @@ export function BsuPenarikanRequestListScreen(): React.JSX.Element {
               return;
             }
 
-            Alert.alert('Berhasil', 'Status penarikan berhasil diupdate.');
+            Alert.alert('Berhasil', 'Status penarikan berhasil diperbarui.');
             await load();
           } finally {
             setUpdatingId(null);

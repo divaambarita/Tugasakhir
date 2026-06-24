@@ -183,7 +183,10 @@ export function NasabahPenarikanCreateScreen(): React.JSX.Element {
     <Screen>
       {error ? <InlineAlert message={error} /> : null}
 
-      <SectionTitle title="Tarik Saldo" subtitle="Ajukan penarikan saldo Anda" />
+      <SectionTitle
+        title="Tarik Saldo"
+        subtitle="Ajukan penarikan saldo Anda"
+      />
 
       <Card style={styles.heroCard}>
         <Text style={styles.heroLabel}>Saldo tersedia</Text>

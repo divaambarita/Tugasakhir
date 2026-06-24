@@ -14,12 +14,15 @@ import {useAuth} from '../../auth/AuthContext';
 import {getNasabahDetail} from '../../api/nasabah';
 import {getPenarikanByNasabah} from '../../api/penarikan';
 import {getTransaksiByNasabah} from '../../api/transaksi';
+import {getJenisSampahData, type JenisSampahRow} from '../../api/jenisSampah';
 import type {NasabahSaldoStackParamList} from '../../navigation/stacks/NasabahSaldoStackNavigator';
 
 import {AppButton} from '../../components/ui/AppButton';
 import {Card} from '../../components/ui/Card';
+import {EmptyState} from '../../components/ui/EmptyState';
 import {InlineAlert} from '../../components/ui/InlineAlert';
 import {Screen} from '../../components/ui/Screen';
+import {SectionTitle} from '../../components/ui/SectionTitle';
 import {theme} from '../../components/ui/theme';
 
 type Nav = NativeStackNavigationProp<NasabahSaldoStackParamList>;
@@ -46,6 +49,8 @@ export function NasabahSaldoHomeScreen(): React.JSX.Element {
   const [saldo, setSaldo] = React.useState<number>(0);
   const [totalPemasukan, setTotalPemasukan] = React.useState<number>(0);
   const [totalPengeluaran, setTotalPengeluaran] = React.useState<number>(0);
+  const [bsuName, setBsuName] = React.useState('');
+  const [hargaRows, setHargaRows] = React.useState<JenisSampahRow[]>([]);
 
   const nasabahId = React.useMemo(() => {
     const id = Number(user?.idAkun);
@@ -64,6 +69,8 @@ export function NasabahSaldoHomeScreen(): React.JSX.Element {
       setSaldo(0);
       setTotalPemasukan(0);
       setTotalPengeluaran(0);
+      setBsuName('');
+      setHargaRows([]);
       return;
     }
 
@@ -91,6 +98,33 @@ export function NasabahSaldoHomeScreen(): React.JSX.Element {
 
     const s = safeNumber((nasabahRes.success ? nasabahRes.data : null)?.saldo);
     setSaldo(s);
+
+    if (nasabahRes.success) {
+      const bsuId = Number(nasabahRes.data?.bsuId);
+      setBsuName(String(nasabahRes.data?.bsu?.nama ?? ''));
+      if (Number.isFinite(bsuId) && bsuId > 0) {
+        const hargaRes = await getJenisSampahData(user.token, bsuId);
+        if (!hargaRes.success) {
+          setError(
+            prev => prev ?? hargaRes.message ?? 'Gagal memuat katalog harga.',
+          );
+          setHargaRows([]);
+        } else {
+          const activePrices = (hargaRes.data?.bsu ?? [])
+            .filter(
+              row =>
+                row.hargasampahbsu !== null && row.hargasampahbsu !== undefined,
+            )
+            .sort((a, b) => a.nama.localeCompare(b.nama));
+          setHargaRows(activePrices);
+        }
+      } else {
+        setHargaRows([]);
+      }
+    } else {
+      setBsuName('');
+      setHargaRows([]);
+    }
 
     const transaksiRows = transaksiRes.success ? transaksiRes.data : [];
     const pemasukan = transaksiRows.reduce<number>(
@@ -167,6 +201,11 @@ export function NasabahSaldoHomeScreen(): React.JSX.Element {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }>
+        <SectionTitle
+          title={`Halo, ${user?.nama || 'Nasabah'}`}
+          subtitle="Pantau tabungan dan riwayat setoran Anda"
+        />
+
         <Card style={styles.heroCard}>
           <Text style={styles.heroTitle}>Saldo Saat Ini</Text>
           <Text style={styles.heroValue}>Rp {formatMoney(saldo)}</Text>
@@ -178,7 +217,9 @@ export function NasabahSaldoHomeScreen(): React.JSX.Element {
         <View style={styles.kpisRow}>
           <Card style={[styles.kpiCard, styles.kpiLeft]}>
             <Text style={styles.kpiTitle}>Pemasukan</Text>
-            <Text style={styles.kpiValue}>Rp {formatMoney(totalPemasukan)}</Text>
+            <Text style={styles.kpiValue}>
+              Rp {formatMoney(totalPemasukan)}
+            </Text>
           </Card>
           <Card style={[styles.kpiCard, styles.kpiRight]}>
             <Text style={styles.kpiTitle}>Pengeluaran</Text>
@@ -199,13 +240,38 @@ export function NasabahSaldoHomeScreen(): React.JSX.Element {
             style={styles.actionSpacing}
             onPress={() => navigation.navigate('NasabahPenarikanList')}
           />
-          <AppButton
-            title="Riwayat Setoran"
-            variant="secondary"
-            style={styles.actionSpacing}
-            onPress={() => navigation.navigate('NasabahSetoranList')}
-          />
         </View>
+
+        <SectionTitle
+          title="Harga Sampah"
+          subtitle={
+            bsuName ? `Acuan harga dari ${bsuName}` : 'Acuan harga dari BSU'
+          }
+        />
+
+        {hargaRows.length === 0 ? (
+          <EmptyState
+            title="Belum ada harga sampah"
+            description="Harga sampah belum diatur oleh BSU Anda."
+          />
+        ) : (
+          hargaRows.map(row => (
+            <Card key={row.idJenisSampah} style={styles.priceCard}>
+              <View style={styles.priceRow}>
+                <View style={styles.priceCopy}>
+                  <Text style={styles.priceName}>{row.nama}</Text>
+                  <Text style={styles.priceCategory}>{row.kategori}</Text>
+                </View>
+                <View style={styles.priceBadge}>
+                  <Text style={styles.priceBadgeText}>
+                    Rp {formatMoney(safeNumber(row.hargasampahbsu))}
+                  </Text>
+                </View>
+              </View>
+              <Text style={styles.priceHint}>Harga per kilogram</Text>
+            </Card>
+          ))
+        )}
       </ScrollView>
     </Screen>
   );
@@ -274,5 +340,43 @@ const styles = StyleSheet.create({
   },
   actionSpacing: {
     marginTop: theme.spacing.sm,
+  },
+  priceCard: {
+    marginBottom: theme.spacing.sm,
+  },
+  priceRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: theme.spacing.sm,
+  },
+  priceCopy: {
+    flex: 1,
+  },
+  priceName: {
+    color: theme.colors.foreground,
+    fontWeight: '900',
+  },
+  priceCategory: {
+    marginTop: 2,
+    color: theme.colors.muted,
+    fontWeight: '700',
+  },
+  priceBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: theme.radius.xl,
+    borderWidth: 1,
+    backgroundColor: theme.colors.primaryContainer,
+    borderColor: theme.colors.successOutline,
+  },
+  priceBadgeText: {
+    color: theme.colors.onPrimaryContainer,
+    fontSize: theme.fontSize.sm,
+    fontWeight: '900',
+  },
+  priceHint: {
+    marginTop: theme.spacing.sm,
+    color: theme.colors.muted,
+    fontWeight: '700',
   },
 });

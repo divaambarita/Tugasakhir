@@ -12,17 +12,21 @@ import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 
 import {useAuth} from '../../auth/AuthContext';
-import {getTransaksiByNasabah, type TransaksiSummary} from '../../api/transaksi';
-import type {NasabahSaldoStackParamList} from '../../navigation/stacks/NasabahSaldoStackNavigator';
-import {isoToJakartaYmd} from '../../utils/date';
+import {
+  getTransaksiByNasabah,
+  type TransaksiSummary,
+} from '../../api/transaksi';
+import type {NasabahSetoranStackParamList} from '../../navigation/stacks/NasabahSetoranStackNavigator';
+import {formatYmdIndonesian, isoToJakartaYmd} from '../../utils/date';
 
 import {Card} from '../../components/ui/Card';
+import {EmptyState} from '../../components/ui/EmptyState';
 import {InlineAlert} from '../../components/ui/InlineAlert';
 import {Screen} from '../../components/ui/Screen';
 import {SectionTitle} from '../../components/ui/SectionTitle';
 import {theme} from '../../components/ui/theme';
 
-type Nav = NativeStackNavigationProp<NasabahSaldoStackParamList>;
+type Nav = NativeStackNavigationProp<NasabahSetoranStackParamList>;
 
 function safeNumber(input: unknown): number {
   const n = typeof input === 'string' ? Number(input) : (input as number);
@@ -133,22 +137,17 @@ export function NasabahSetoranListScreen(): React.JSX.Element {
     <Screen>
       {error ? <InlineAlert message={error} /> : null}
 
-      <SectionTitle
-        title="Setoran"
-        subtitle="Riwayat setoran milik Anda"
-      />
+      <SectionTitle title="Setoran" subtitle="Riwayat setoran milik Anda" />
 
       <ScrollView
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }>
         {rows.length === 0 ? (
-          <Card>
-            <Text style={styles.emptyTitle}>Belum ada setoran</Text>
-            <Text style={styles.emptyDesc}>
-              Riwayat setoran akan muncul setelah ada transaksi setoran.
-            </Text>
-          </Card>
+          <EmptyState
+            title="Belum ada setoran"
+            description="Setoran yang dicatat oleh petugas BSU akan muncul di halaman ini."
+          />
         ) : (
           rows.map(r => {
             const dateYmd = isoToJakartaYmd(r.tanggal);
@@ -168,8 +167,12 @@ export function NasabahSetoranListScreen(): React.JSX.Element {
                 <Card style={styles.card}>
                   <View style={styles.rowTop}>
                     <View style={styles.rowTopText}>
-                      <Text style={styles.cardTitle}>{dateYmd}</Text>
-                      <Text style={styles.hint}>Tap untuk lihat detail</Text>
+                      <Text style={styles.cardTitle}>
+                        {formatYmdIndonesian(dateYmd)}
+                      </Text>
+                      <Text style={styles.hint}>
+                        Ketuk untuk melihat detail
+                      </Text>
                     </View>
                     <View style={styles.badge}>
                       <Text style={styles.badgeText}>
@@ -273,15 +276,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '900',
     color: theme.colors.foreground,
-  },
-  emptyTitle: {
-    fontSize: theme.fontSize.lg,
-    fontWeight: '900',
-    color: theme.colors.foreground,
-    marginBottom: theme.spacing.xs,
-  },
-  emptyDesc: {
-    color: theme.colors.muted,
-    fontWeight: '700',
   },
 });

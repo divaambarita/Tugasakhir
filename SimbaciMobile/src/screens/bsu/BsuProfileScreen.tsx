@@ -7,11 +7,9 @@ import {
   Text,
   View,
 } from 'react-native';
-import {launchImageLibrary} from 'react-native-image-picker';
 
 import {useAuth} from '../../auth/AuthContext';
 import {getBsuAdminDetail, updateBsuProfile} from '../../api/bsu';
-import {uploadSingleImage} from '../../api/fileUpload';
 import {AppButton} from '../../components/ui/AppButton';
 import {AppTextField} from '../../components/ui/AppTextField';
 import {Card} from '../../components/ui/Card';
@@ -149,7 +147,7 @@ export function BsuProfileScreen(): React.JSX.Element {
 
     const res = await getBsuAdminDetail(user.token, bsuId);
     if (!res.success) {
-      setError(res.message ?? 'Gagal memuat profile BSU.');
+      setError(res.message ?? 'Gagal memuat profil BSU.');
       return;
     }
 
@@ -198,64 +196,6 @@ export function BsuProfileScreen(): React.JSX.Element {
     }
     setError(null);
     setIsEditing(false);
-  };
-
-  const pickAndUploadFoto = async () => {
-    if (!user) {
-      return;
-    }
-
-    setError(null);
-
-    let result: Awaited<ReturnType<typeof launchImageLibrary>>;
-    try {
-      result = await launchImageLibrary({
-        mediaType: 'photo',
-        selectionLimit: 1,
-      });
-    } catch {
-      setError(
-        'Fitur pilih foto belum tersedia di build ini. Coba rebuild Android: `cd android && ./gradlew clean` lalu `npm run android`.',
-      );
-      return;
-    }
-
-    if (result.didCancel) {
-      return;
-    }
-
-    const asset = result.assets?.[0];
-    if (!asset?.uri) {
-      setError('Gagal memilih foto.');
-      return;
-    }
-
-    setSaving(true);
-    try {
-      const uploadRes = await uploadSingleImage(
-        {
-          uri: asset.uri,
-          fileName: asset.fileName,
-          type: asset.type,
-        },
-        'foto-bsu',
-      );
-
-      if (!uploadRes.success) {
-        setError(uploadRes.message ?? 'Gagal upload foto.');
-        return;
-      }
-
-      const url = uploadRes.data?.[0]?.path;
-      if (!url) {
-        setError('Gagal membaca hasil upload.');
-        return;
-      }
-
-      setDraft(prev => ({...prev, fotoUrl: url}));
-    } finally {
-      setSaving(false);
-    }
   };
 
   const submit = async () => {
@@ -329,11 +269,11 @@ export function BsuProfileScreen(): React.JSX.Element {
       });
 
       if (!res.success) {
-        setError(res.message ?? 'Gagal menyimpan profile.');
+        setError(res.message ?? 'Gagal menyimpan profil.');
         return;
       }
 
-      Alert.alert('Berhasil', 'Profile berhasil disimpan.');
+      Alert.alert('Berhasil', 'Profil berhasil disimpan.');
       await load();
     } finally {
       setSaving(false);
@@ -366,7 +306,7 @@ export function BsuProfileScreen(): React.JSX.Element {
       <Screen>
         <View style={styles.center}>
           <ActivityIndicator />
-          <Text style={styles.centerText}>Memuat profile…</Text>
+          <Text style={styles.centerText}>Memuat profil…</Text>
         </View>
       </Screen>
     );
@@ -385,29 +325,52 @@ export function BsuProfileScreen(): React.JSX.Element {
   if (!isEditing) {
     return (
       <Screen scroll>
-        <SectionTitle title="Profile" />
+        <SectionTitle
+          title="Profil"
+          subtitle="Informasi Bank Sampah dan akun yang sedang aktif"
+        />
 
         {error ? <InlineAlert message={error} /> : null}
 
-        <Card>
-          <Text style={styles.sectionTitle}>Informasi BSU</Text>
-          <Text style={styles.meta}>Nama Bank Sampah: {saved.nama || '-'}</Text>
-          <Text style={styles.meta}>Alamat: {saved.alamat || '-'}</Text>
-          <Text style={styles.meta}>Foto: {saved.fotoUrl ? 'Ada' : '-'}</Text>
-          <Text style={styles.meta}>
-            Jadwal (hari): {scheduleSummary.dayText}
-          </Text>
-          <Text style={styles.meta}>Jam: {scheduleSummary.timeText}</Text>
+        <Card style={styles.profileCard}>
+          <View style={styles.identity}>
+            <Text style={styles.identityName}>{saved.nama || '-'}</Text>
+            <Text style={styles.identityRole}>Bank Sampah Unit</Text>
+          </View>
+
+          <View style={styles.divider} />
+
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Alamat</Text>
+            <Text style={styles.value}>{saved.alamat || '-'}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>No. Telp</Text>
+            <Text style={styles.value}>{user.noTelp || '-'}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>ID Akun</Text>
+            <Text style={styles.value}>{user.idAkun}</Text>
+          </View>
 
           <View style={styles.actions}>
-            <AppButton title="Edit" onPress={() => setIsEditing(true)} />
+            <AppButton title="Edit Profil" onPress={() => setIsEditing(true)} />
           </View>
         </Card>
 
         <Card style={styles.cardSpacing}>
-          <Text style={styles.sectionTitle}>Akun</Text>
-          <Text style={styles.meta}>No. Telp: {user.noTelp}</Text>
-          <Text style={styles.meta}>Role: {user.roleName}</Text>
+          <Text style={styles.sectionTitle}>Jadwal Operasional</Text>
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Hari</Text>
+            <Text style={styles.value}>{scheduleSummary.dayText}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Jam</Text>
+            <Text style={styles.value}>{scheduleSummary.timeText}</Text>
+          </View>
+
+          <View style={styles.divider} />
+
           <View style={styles.actions}>
             <AppButton title="Logout" onPress={logout} variant="destructive" />
           </View>
@@ -418,11 +381,23 @@ export function BsuProfileScreen(): React.JSX.Element {
 
   return (
     <Screen scroll>
-      <SectionTitle title="Edit Profile" subtitle="Edit data Bank Sampah" />
+      <SectionTitle
+        title="Edit Profil"
+        subtitle="Perbarui informasi Bank Sampah dan jadwal operasional"
+      />
 
       {error ? <InlineAlert message={error} /> : null}
 
-      <Card>
+      <Card style={styles.profileCard}>
+        <View style={styles.identity}>
+          <Text style={styles.identityName}>
+            {draft.nama || saved.nama || '-'}
+          </Text>
+          <Text style={styles.identityRole}>Bank Sampah Unit</Text>
+        </View>
+      </Card>
+
+      <Card style={styles.cardSpacing}>
         <Text style={styles.sectionTitle}>Data Utama</Text>
 
         <AppTextField
@@ -438,22 +413,6 @@ export function BsuProfileScreen(): React.JSX.Element {
           onChangeText={t => setDraft(prev => ({...prev, alamat: t}))}
           placeholder="Masukkan alamat"
         />
-      </Card>
-
-      <Card style={styles.cardSpacing}>
-        <Text style={styles.sectionTitle}>Foto</Text>
-
-        <AppButton
-          title={draft.fotoUrl ? 'Ganti Foto' : 'Upload Foto'}
-          onPress={pickAndUploadFoto}
-          loading={saving}
-          disabled={saving}
-          variant={draft.fotoUrl ? 'secondary' : 'primary'}
-        />
-
-        {draft.fotoUrl ? (
-          <Text style={styles.meta}>{draft.fotoUrl}</Text>
-        ) : null}
       </Card>
 
       <Card style={styles.cardSpacing}>
@@ -534,10 +493,11 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   sectionTitle: {
-    fontSize: 14,
+    fontSize: 16,
+    lineHeight: 22,
     fontWeight: '900',
     color: theme.colors.foreground,
-    marginBottom: theme.spacing.xs,
+    marginBottom: theme.spacing.sm,
   },
   meta: {
     marginTop: theme.spacing.xs,
@@ -546,6 +506,43 @@ const styles = StyleSheet.create({
   },
   cardSpacing: {
     marginTop: theme.spacing.md,
+  },
+  profileCard: {
+    gap: theme.spacing.md,
+  },
+  identity: {
+    paddingVertical: theme.spacing.xs,
+  },
+  identityName: {
+    color: theme.colors.foreground,
+    fontSize: theme.fontSize.xl,
+    lineHeight: 24,
+    fontWeight: '900',
+  },
+  identityRole: {
+    marginTop: 2,
+    color: theme.colors.muted,
+    fontWeight: '800',
+  },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: theme.colors.outline,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: theme.spacing.md,
+  },
+  label: {
+    color: theme.colors.muted,
+    fontWeight: '800',
+  },
+  value: {
+    flex: 1,
+    color: theme.colors.foreground,
+    fontWeight: '900',
+    textAlign: 'right',
   },
   pressed: {
     opacity: 0.85,

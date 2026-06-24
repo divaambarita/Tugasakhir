@@ -11,10 +11,7 @@ import {useFocusEffect} from '@react-navigation/native';
 
 import {useAuth} from '../../auth/AuthContext';
 import {getNasabahDetail} from '../../api/nasabah';
-import {
-  getJenisSampahData,
-  type JenisSampahRow,
-} from '../../api/jenisSampah';
+import {getJenisSampahData, type JenisSampahRow} from '../../api/jenisSampah';
 
 import {Card} from '../../components/ui/Card';
 import {InlineAlert} from '../../components/ui/InlineAlert';
@@ -157,7 +154,9 @@ export function NasabahHargaSampahScreen(): React.JSX.Element {
         }>
         <SectionTitle
           title="Harga Sampah"
-          subtitle={bsuName ? `Acuan harga dari ${bsuName}` : 'Acuan harga dari BSU'}
+          subtitle={
+            bsuName ? `Acuan harga dari ${bsuName}` : 'Acuan harga dari BSU'
+          }
         />
 
         {rows.length === 0 ? (
@@ -178,11 +177,15 @@ export function NasabahHargaSampahScreen(): React.JSX.Element {
                     <Text style={styles.category}>{r.kategori}</Text>
                   </View>
                   <View style={styles.badge}>
-                    <Text style={styles.badgeText}>Rp {formatMoney(harga)}</Text>
+                    <Text style={styles.badgeText}>
+                      Rp {formatMoney(harga)}
+                    </Text>
                   </View>
                 </View>
 
-                <Text style={styles.hint}>Harga per kg (acuan sebelum menyetor)</Text>
+                <Text style={styles.hint}>
+                  Harga per kg (acuan sebelum menyetor)
+                </Text>
               </Card>
             );
           })

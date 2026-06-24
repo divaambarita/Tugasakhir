@@ -3,12 +3,13 @@ import {
   createBottomTabNavigator,
   type BottomTabBarProps,
 } from '@react-navigation/bottom-tabs';
+import {mobileTabScreenOptions} from '../options';
 
 import {AppBottomTabBar} from '../../components/AppBottomTabBar';
 
 import {VolunteerVerificationStackNavigator} from '../stacks/VolunteerVerificationStackNavigator';
+import {VolunteerHistoryStackNavigator} from '../stacks/VolunteerHistoryStackNavigator';
 import {ProfileScreen} from '../../screens/ProfileScreen';
-import {VolunteerRiwayatScreen} from '../../screens/VolunteerRiwayatScreen';
 
 export type VolunteerTabParamList = {
   VolunteerVerification: undefined;
@@ -24,9 +25,7 @@ const renderTabBar = (props: BottomTabBarProps) => (
 
 export function VolunteerTabsNavigator(): React.JSX.Element {
   return (
-    <Tab.Navigator
-      tabBar={renderTabBar}
-      screenOptions={{headerTitleAlign: 'center'}}>
+    <Tab.Navigator tabBar={renderTabBar} screenOptions={mobileTabScreenOptions}>
       <Tab.Screen
         name="VolunteerVerification"
         component={VolunteerVerificationStackNavigator}
@@ -38,16 +37,17 @@ export function VolunteerTabsNavigator(): React.JSX.Element {
       />
       <Tab.Screen
         name="VolunteerRiwayat"
-        component={VolunteerRiwayatScreen}
+        component={VolunteerHistoryStackNavigator}
         options={{
           title: 'Riwayat',
           tabBarLabel: 'Riwayat',
+          headerShown: false,
         }}
       />
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
-        options={{title: 'Profile', tabBarLabel: 'Profile'}}
+        options={{title: 'Profil', tabBarLabel: 'Profil'}}
       />
     </Tab.Navigator>
   );

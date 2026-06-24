@@ -26,6 +26,7 @@ import {
 import type {BsuFinanceStackParamList} from '../../navigation/stacks/BsuFinanceStackNavigator';
 import {AppButton} from '../../components/ui/AppButton';
 import {Card} from '../../components/ui/Card';
+import {EmptyState} from '../../components/ui/EmptyState';
 import {InlineAlert} from '../../components/ui/InlineAlert';
 import {Screen} from '../../components/ui/Screen';
 import {theme} from '../../components/ui/theme';
@@ -248,6 +249,7 @@ export function BsuKeuanganListScreen(): React.JSX.Element {
           }
 
           await load();
+          Alert.alert('Berhasil', 'Catatan keuangan berhasil dihapus.');
         },
       },
     ]);
@@ -327,7 +329,12 @@ export function BsuKeuanganListScreen(): React.JSX.Element {
           );
         }}
         ListEmptyComponent={
-          <Text style={styles.empty}>Belum ada data keuangan.</Text>
+          <EmptyState
+            title="Belum ada catatan keuangan"
+            description="Tambahkan pemasukan atau pengeluaran untuk mulai memantau arus kas BSU."
+            actionLabel="Tambah Pemasukan"
+            onAction={() => navigation.navigate('BsuKeuanganAddPemasukan')}
+          />
         }
       />
     </Screen>
@@ -408,11 +415,5 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.85,
-  },
-  empty: {
-    textAlign: 'center',
-    marginTop: theme.spacing.lg,
-    color: theme.colors.muted,
-    fontWeight: '700',
   },
 });

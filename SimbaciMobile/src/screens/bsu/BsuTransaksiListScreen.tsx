@@ -16,10 +16,11 @@ import {getTransaksiByBsu, type TransaksiSummary} from '../../api/transaksi';
 import type {BsuHomeStackParamList} from '../../navigation/stacks/BsuHomeStackNavigator';
 import {AppButton} from '../../components/ui/AppButton';
 import {Card} from '../../components/ui/Card';
+import {EmptyState} from '../../components/ui/EmptyState';
 import {InlineAlert} from '../../components/ui/InlineAlert';
 import {Screen} from '../../components/ui/Screen';
 import {theme} from '../../components/ui/theme';
-import {isoToJakartaYmd} from '../../utils/date';
+import {formatYmdIndonesian, isoToJakartaYmd} from '../../utils/date';
 
 type Nav = NativeStackNavigationProp<BsuHomeStackParamList>;
 
@@ -166,20 +167,31 @@ export function BsuTransaksiListScreen(): React.JSX.Element {
             <Card style={styles.rowCard}>
               <View style={styles.rowTop}>
                 <View style={styles.rowTopText}>
-                  <Text style={styles.rowTitle}>{item.date}</Text>
-                  <Text style={styles.rowHint}>Tap untuk lihat detail</Text>
+                  <Text style={styles.rowTitle}>
+                    {formatYmdIndonesian(item.date)}
+                  </Text>
+                  <Text style={styles.rowHint}>Ketuk untuk melihat detail</Text>
                 </View>
                 <View style={styles.badge}>
-                  <Text style={styles.badgeText}>{item.totalBerat.toFixed(2)} kg</Text>
+                  <Text style={styles.badgeText}>
+                    {item.totalBerat.toFixed(2)} kg
+                  </Text>
                 </View>
               </View>
 
-              <Text style={styles.rowAmount}>Rp {formatMoney(item.totalHarga)}</Text>
+              <Text style={styles.rowAmount}>
+                Rp {formatMoney(item.totalHarga)}
+              </Text>
             </Card>
           </Pressable>
         )}
         ListEmptyComponent={
-          <Text style={styles.empty}>Belum ada transaksi.</Text>
+          <EmptyState
+            title="Belum ada transaksi setoran"
+            description="Catat setoran pertama saat nasabah membawa sampah ke unit Anda."
+            actionLabel="Tambah Transaksi"
+            onAction={() => navigation.navigate('BsuTransaksiCreate')}
+          />
         }
       />
     </Screen>
@@ -244,11 +256,5 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '900',
     color: theme.colors.foreground,
-  },
-  empty: {
-    textAlign: 'center',
-    marginTop: theme.spacing.lg,
-    color: theme.colors.muted,
-    fontWeight: '700',
   },
 });

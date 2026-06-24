@@ -13,13 +13,15 @@ import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 
 import {useAuth} from '../../auth/AuthContext';
 import {getJenisSampahData, type JenisSampahRow} from '../../api/jenisSampah';
-import type {BsuHomeStackParamList} from '../../navigation/stacks/BsuHomeStackNavigator';
+import type {BsuHargaSampahStackParamList} from '../../navigation/stacks/BsuHargaSampahStackNavigator';
+import {AppButton} from '../../components/ui/AppButton';
 import {Card} from '../../components/ui/Card';
+import {EmptyState} from '../../components/ui/EmptyState';
 import {InlineAlert} from '../../components/ui/InlineAlert';
 import {Screen} from '../../components/ui/Screen';
 import {theme} from '../../components/ui/theme';
 
-type Nav = NativeStackNavigationProp<BsuHomeStackParamList>;
+type Nav = NativeStackNavigationProp<BsuHargaSampahStackParamList>;
 
 type Row = {
   key: string;
@@ -94,23 +96,19 @@ export function BsuJenisSampahListScreen(): React.JSX.Element {
       mapBsuHarga.set(r.idJenisSampah, toNumber(r.hargasampahbsu));
     }
 
-    const merged: Row[] = all.map((r: JenisSampahRow) => ({
-      key: String(r.idJenisSampah),
-      idJenisSampah: r.idJenisSampah,
-      nama: r.nama,
-      kategori: r.kategori,
-      hargaBsi: toNumber(r.hargasampahbsi),
-      hargaBsu: mapBsuHarga.get(r.idJenisSampah) ?? null,
-    }));
+    const merged: Row[] = all
+      .filter(r => mapBsuHarga.get(r.idJenisSampah) !== null)
+      .filter(r => mapBsuHarga.get(r.idJenisSampah) !== undefined)
+      .map((r: JenisSampahRow) => ({
+        key: String(r.idJenisSampah),
+        idJenisSampah: r.idJenisSampah,
+        nama: r.nama,
+        kategori: r.kategori,
+        hargaBsi: toNumber(r.hargasampahbsi),
+        hargaBsu: mapBsuHarga.get(r.idJenisSampah) ?? null,
+      }));
 
-    merged.sort((a, b) => {
-      const aHas = a.hargaBsu !== null;
-      const bHas = b.hargaBsu !== null;
-      if (aHas !== bHas) {
-        return aHas ? -1 : 1;
-      }
-      return a.nama.localeCompare(b.nama);
-    });
+    merged.sort((a, b) => a.nama.localeCompare(b.nama));
 
     setItems(merged);
   }, [user]);
@@ -168,6 +166,13 @@ export function BsuJenisSampahListScreen(): React.JSX.Element {
     <Screen>
       {error ? <InlineAlert message={error} /> : null}
 
+      <View style={styles.actions}>
+        <AppButton
+          title="Tambah Jenis Sampah"
+          onPress={() => navigation.navigate('BsuJenisSampahAdd')}
+        />
+      </View>
+
       <FlatList
         data={items}
         keyExtractor={item => item.key}
@@ -197,7 +202,12 @@ export function BsuJenisSampahListScreen(): React.JSX.Element {
           </Pressable>
         )}
         ListEmptyComponent={
-          <Text style={styles.empty}>Belum ada jenis sampah.</Text>
+          <EmptyState
+            title="Belum ada harga sampah BSU"
+            description="Tambahkan jenis sampah dari daftar master untuk mulai menentukan harga BSU."
+            actionLabel="Tambah Jenis Sampah"
+            onAction={() => navigation.navigate('BsuJenisSampahAdd')}
+          />
         }
       />
     </Screen>
@@ -214,6 +224,9 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.sm,
     color: theme.colors.muted,
     fontWeight: '700',
+  },
+  actions: {
+    marginBottom: theme.spacing.sm,
   },
   rowCard: {
     marginBottom: theme.spacing.sm,
@@ -234,11 +247,5 @@ const styles = StyleSheet.create({
   rowMeta: {
     marginTop: theme.spacing.xs,
     color: theme.colors.muted,
-  },
-  empty: {
-    textAlign: 'center',
-    marginTop: theme.spacing.lg,
-    color: theme.colors.muted,
-    fontWeight: '700',
   },
 });

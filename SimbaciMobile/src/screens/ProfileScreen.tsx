@@ -12,13 +12,28 @@ export function ProfileScreen(): React.JSX.Element {
   const {user, logout} = useAuth();
 
   return (
-    <Screen>
-      <SectionTitle title="Profile" />
+    <Screen scroll>
+      <SectionTitle
+        title="Profil"
+        subtitle="Informasi akun yang sedang aktif"
+      />
 
-      <Card>
-        <Text style={styles.row}>Role: {user?.roleName ?? '-'}</Text>
-        <Text style={styles.row}>Nama: {user?.nama ?? '-'}</Text>
-        <Text style={styles.row}>No. Telp: {user?.noTelp ?? '-'}</Text>
+      <Card style={styles.card}>
+        <View style={styles.identity}>
+          <Text style={styles.name}>{user?.nama ?? '-'}</Text>
+          <Text style={styles.role}>{user?.roleName ?? '-'}</Text>
+        </View>
+
+        <View style={styles.divider} />
+
+        <View style={styles.infoRow}>
+          <Text style={styles.label}>No. Telp</Text>
+          <Text style={styles.value}>{user?.noTelp ?? '-'}</Text>
+        </View>
+        <View style={styles.infoRow}>
+          <Text style={styles.label}>ID Akun</Text>
+          <Text style={styles.value}>{user?.idAkun ?? '-'}</Text>
+        </View>
 
         <View style={styles.actions}>
           <AppButton title="Logout" onPress={logout} variant="destructive" />
@@ -29,12 +44,44 @@ export function ProfileScreen(): React.JSX.Element {
 }
 
 const styles = StyleSheet.create({
-  row: {
+  card: {
+    gap: theme.spacing.md,
+  },
+  identity: {
+    paddingVertical: theme.spacing.xs,
+  },
+  name: {
     color: theme.colors.foreground,
-    fontWeight: '700',
-    marginTop: theme.spacing.xs,
+    fontSize: theme.fontSize.xl,
+    lineHeight: 24,
+    fontWeight: '900',
+  },
+  role: {
+    marginTop: 2,
+    color: theme.colors.muted,
+    fontWeight: '800',
+    textTransform: 'capitalize',
+  },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: theme.colors.outline,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: theme.spacing.md,
+  },
+  label: {
+    color: theme.colors.muted,
+    fontWeight: '800',
+  },
+  value: {
+    flex: 1,
+    color: theme.colors.foreground,
+    fontWeight: '900',
+    textAlign: 'right',
   },
   actions: {
-    marginTop: theme.spacing.md,
+    marginTop: theme.spacing.xs,
   },
 });

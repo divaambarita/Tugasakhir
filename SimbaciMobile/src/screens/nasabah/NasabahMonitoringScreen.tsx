@@ -20,17 +20,11 @@ import {InlineAlert} from '../../components/ui/InlineAlert';
 import {Screen} from '../../components/ui/Screen';
 import {SectionTitle} from '../../components/ui/SectionTitle';
 import {theme} from '../../components/ui/theme';
-
-const categories = [
-  'Limbah B3',
-  'Sampah Organik (Mudah Terurai)',
-  'Sampah Anorganik (Plastik)',
-  'Sampah Anorganik (Kertas)',
-  'Sampah Anorganik (Logam)',
-  'Sampah Anorganik (Kaca)',
-  'Sampah Anorganik (Karet)',
-  'Sampah Anorganik (Tekstil)',
-] as const;
+import {
+  CategoryProductionChart,
+  WASTE_CATEGORIES as categories,
+  type CategoryMonthPoint,
+} from '../../components/monitoring/CategoryProductionChart';
 
 type MonthKey = {
   year: number;
@@ -171,6 +165,22 @@ function buildYearSeries(
     });
   }
   return points;
+}
+
+function buildCategoryYearSeries(
+  map: NasabahSampahMonitoring['beratPerKategoriByMonthYear'] | undefined,
+  year: number,
+): CategoryMonthPoint[] {
+  if (!map) {
+    return [];
+  }
+
+  return getAvailableMonths(map)
+    .filter(month => month.year === year)
+    .map(month => ({
+      label: monthNameId(month.month).slice(0, 3),
+      byCategory: sumMonthTotals(map, year, month.month).byCategory,
+    }));
 }
 
 function GroupedBarChart({
@@ -354,38 +364,6 @@ function GroupedBarChart({
   );
 }
 
-function getCategoryValue(
-  byCategory: Record<string, number>,
-  displayName: string,
-): number {
-  const name = displayName.toLowerCase();
-  if (name.includes('plastik')) {
-    return safeNumber(byCategory.plastik);
-  }
-  if (name.includes('kertas')) {
-    return safeNumber(byCategory.kertas);
-  }
-  if (name.includes('logam')) {
-    return safeNumber(byCategory.logam);
-  }
-  if (name.includes('kaca')) {
-    return safeNumber(byCategory.kaca);
-  }
-  if (name.includes('karet')) {
-    return safeNumber(byCategory.karet);
-  }
-  if (name.includes('tekstil')) {
-    return safeNumber(byCategory.tekstil);
-  }
-  if (name.includes('organik')) {
-    return safeNumber(byCategory.organik);
-  }
-  if (name.includes('b3')) {
-    return safeNumber(byCategory.b3);
-  }
-  return 0;
-}
-
 export function NasabahMonitoringScreen(): React.JSX.Element {
   const {user} = useAuth();
 
@@ -539,6 +517,12 @@ export function NasabahMonitoringScreen(): React.JSX.Element {
       filterYear,
     );
   }, [filterYear, sampah]);
+
+  const categoryYearSeries = React.useMemo(
+    () =>
+      buildCategoryYearSeries(sampah?.beratPerKategoriByMonthYear, filterYear),
+    [filterYear, sampah],
+  );
 
   const toggleDropdown = (which: 'year' | 'month') => {
     setOpenDropdown(prev => (prev === which ? null : which));
@@ -695,23 +679,46 @@ export function NasabahMonitoringScreen(): React.JSX.Element {
       </Card>
 
       <Card style={styles.sectionCard}>
-        <Text style={styles.sectionCardTitle}>Statistik per Kategori</Text>
+        <Text style={styles.sectionCardTitle}>
+          Grafik Produksi Sampah per Kategori
+        </Text>
+        <Text style={styles.sectionCardSubtitle}>Tahun {filterYear}</Text>
+        {categoryYearSeries.length === 0 ? (
+          <Text style={styles.empty}>Belum ada data grafik.</Text>
+        ) : (
+          <CategoryProductionChart points={categoryYearSeries} />
+        )}
+      </Card>
 
-        {categories.map(name => {
-          const berat = getCategoryValue(beratAgg.byCategory, name);
-          const emisi = getCategoryValue(emisiAgg.byCategory, name);
-          return (
-            <View key={name} style={styles.categoryRow}>
-              <Text style={styles.categoryName}>{name}</Text>
-              <Text style={styles.categoryMeta}>
-                Berat: {formatWeightKg(berat)}
-              </Text>
-              <Text style={styles.categoryMeta}>
-                Emisi: {formatCarbonKg(emisi)}
-              </Text>
-            </View>
-          );
-        })}
+      <Card style={styles.sectionCard}>
+        <Text style={styles.sectionCardTitle}>
+          Statistik Data Sampah per Kategori
+        </Text>
+
+        {categories.map(name => (
+          <View key={name} style={styles.categoryRow}>
+            <Text style={styles.categoryName}>{name}</Text>
+            <Text style={styles.categoryMeta}>
+              {formatWeightKg(beratAgg.byCategory[name])}
+            </Text>
+          </View>
+        ))}
+      </Card>
+
+      <Card style={styles.sectionCard}>
+        <Text style={styles.sectionCardTitle}>
+          Total Emisi Karbon per Kategori
+        </Text>
+        <Text style={styles.sectionCardSubtitle}>{periodLabel}</Text>
+
+        {categories.map(name => (
+          <View key={name} style={styles.categoryRow}>
+            <Text style={styles.categoryName}>{name}</Text>
+            <Text style={styles.categoryMeta}>
+              {formatCarbonKg(emisiAgg.byCategory[name])}
+            </Text>
+          </View>
+        ))}
       </Card>
     </Screen>
   );
@@ -811,6 +818,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '900',
     color: theme.colors.foreground,
+  },
+  sectionCardSubtitle: {
+    marginTop: theme.spacing.xs,
+    color: theme.colors.muted,
+    fontWeight: '700',
   },
   chartWrap: {
     marginTop: theme.spacing.sm,

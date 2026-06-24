@@ -34,20 +34,20 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.md,
   },
   containerError: {
-      backgroundColor: theme.colors.errorContainer,
-      borderColor: theme.colors.errorOutline,
+    backgroundColor: theme.colors.errorContainer,
+    borderColor: theme.colors.errorOutline,
   },
   containerInfo: {
-      backgroundColor: theme.colors.primaryContainer,
-      borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.primaryContainer,
+    borderColor: theme.colors.primary,
   },
   text: {
-      ...theme.typography.body,
+    ...theme.typography.body,
   },
   textError: {
-      color: theme.colors.destructive,
+    color: theme.colors.destructive,
   },
   textInfo: {
-      color: theme.colors.onPrimaryContainer,
+    color: theme.colors.onPrimaryContainer,
   },
 });

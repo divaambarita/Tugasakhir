@@ -20,6 +20,7 @@ type Props = {
   loading?: boolean;
   variant?: Variant;
   style?: StyleProp<ViewStyle>;
+  compact?: boolean;
 };
 
 export function AppButton({
@@ -29,6 +30,7 @@ export function AppButton({
   loading = false,
   variant = 'primary',
   style,
+  compact = false,
 }: Props): React.JSX.Element {
   const isDisabled = disabled || loading;
   let vStyles: ViewStyle = styles.primary;
@@ -53,6 +55,7 @@ export function AppButton({
       }
       style={({pressed}) => [
         styles.base,
+        compact ? styles.compact : null,
         vStyles,
         style,
         isDisabled ? styles.disabled : null,
@@ -66,7 +69,11 @@ export function AppButton({
         {loading ? (
           <ActivityIndicator
             size="small"
-            color={variant === 'secondary' ? theme.colors.onSurface : theme.colors.onPrimary}
+            color={
+              variant === 'secondary'
+                ? theme.colors.onSurface
+                : theme.colors.onPrimary
+            }
           />
         ) : null}
         <Text style={[styles.text, textStyles]} numberOfLines={1}>
@@ -79,21 +86,26 @@ export function AppButton({
 
 const styles = StyleSheet.create({
   base: {
-    borderRadius: theme.radius.sm,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    minHeight: 48,
+    borderRadius: theme.radius.md,
+    paddingVertical: 13,
+    paddingHorizontal: 16,
+    minHeight: 50,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
     ...(Platform.OS === 'android'
       ? {elevation: theme.elevation.sm}
       : {
-          shadowColor: theme.colors.onSurface,
-          shadowOpacity: 0.08,
-          shadowRadius: 10,
-          shadowOffset: {width: 0, height: 6},
+          shadowColor: theme.colors.surfaceShadow,
+          shadowOpacity: 1,
+          shadowRadius: 12,
+          shadowOffset: {width: 0, height: 7},
         }),
+  },
+  compact: {
+    minHeight: 42,
+    paddingVertical: 9,
+    paddingHorizontal: 12,
   },
   row: {
     flexDirection: 'row',
@@ -115,7 +127,7 @@ const styles = StyleSheet.create({
   },
   secondary: {
     backgroundColor: theme.colors.surface,
-    borderColor: theme.colors.outline,
+    borderColor: theme.colors.outlineVariant,
   },
   destructive: {
     backgroundColor: theme.colors.destructive,

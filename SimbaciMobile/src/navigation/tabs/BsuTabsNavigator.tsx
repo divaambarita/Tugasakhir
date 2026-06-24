@@ -3,6 +3,7 @@ import {
   createBottomTabNavigator,
   type BottomTabBarProps,
 } from '@react-navigation/bottom-tabs';
+import {mobileTabScreenOptions} from '../options';
 
 import {AppBottomTabBar} from '../../components/AppBottomTabBar';
 
@@ -30,9 +31,7 @@ const renderTabBar = (props: BottomTabBarProps) => (
 
 export function BsuTabsNavigator(): React.JSX.Element {
   return (
-    <Tab.Navigator
-      tabBar={renderTabBar}
-      screenOptions={{headerTitleAlign: 'center'}}>
+    <Tab.Navigator tabBar={renderTabBar} screenOptions={mobileTabScreenOptions}>
       <Tab.Screen
         name="BsuHome"
         component={BsuMonitoringStackNavigator}
@@ -81,7 +80,7 @@ export function BsuTabsNavigator(): React.JSX.Element {
       <Tab.Screen
         name="Profile"
         component={BsuProfileScreen}
-        options={{title: 'Profile', tabBarLabel: 'Profile'}}
+        options={{title: 'Profil', tabBarLabel: 'Profil'}}
       />
     </Tab.Navigator>
   );

@@ -9,15 +9,17 @@ export function Card({style, ...rest}: ViewProps): React.JSX.Element {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.md,
+    borderRadius: theme.radius.lg,
     padding: theme.spacing.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: theme.colors.outline,
     ...(Platform.OS === 'android'
       ? {elevation: theme.elevation.sm}
       : {
-          shadowColor: theme.colors.onSurface,
-          shadowOpacity: 0.06,
-          shadowRadius: 10,
-          shadowOffset: {width: 0, height: 6},
+          shadowColor: theme.colors.surfaceShadow,
+          shadowOpacity: 1,
+          shadowRadius: 14,
+          shadowOffset: {width: 0, height: 8},
         }),
   },
 });

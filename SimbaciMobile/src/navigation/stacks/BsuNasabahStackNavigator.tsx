@@ -1,5 +1,6 @@
 import React from 'react';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import {mobileStackScreenOptions} from '../options';
 
 import {BsuNasabahListScreen} from '../../screens/bsu/BsuNasabahListScreen';
 import {BsuNasabahFormScreen} from '../../screens/bsu/BsuNasabahFormScreen';
@@ -13,7 +14,7 @@ const Stack = createNativeStackNavigator<BsuNasabahStackParamList>();
 
 export function BsuNasabahStackNavigator(): React.JSX.Element {
   return (
-    <Stack.Navigator screenOptions={{headerTitleAlign: 'center'}}>
+    <Stack.Navigator screenOptions={mobileStackScreenOptions}>
       <Stack.Screen
         name="BsuNasabahList"
         component={BsuNasabahListScreen}

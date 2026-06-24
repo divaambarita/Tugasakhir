@@ -1,5 +1,6 @@
 import React from 'react';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import {mobileStackScreenOptions} from '../options';
 
 import {NasabahHargaSampahScreen} from '../../screens/nasabah/NasabahHargaSampahScreen';
 
@@ -11,7 +12,7 @@ const Stack = createNativeStackNavigator<NasabahHargaStackParamList>();
 
 export function NasabahHargaStackNavigator(): React.JSX.Element {
   return (
-    <Stack.Navigator screenOptions={{headerTitleAlign: 'center'}}>
+    <Stack.Navigator screenOptions={mobileStackScreenOptions}>
       <Stack.Screen
         name="NasabahHargaHome"
         component={NasabahHargaSampahScreen}
@@ -20,4 +21,3 @@ export function NasabahHargaStackNavigator(): React.JSX.Element {
     </Stack.Navigator>
   );
 }
-

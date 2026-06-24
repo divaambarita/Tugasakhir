@@ -6,10 +6,10 @@ export const theme = {
     // Background: #F9FAFB, Surface: #FFFFFF
     // Text main: #111827, Text secondary: #6B7280
 
-    background: '#F9FAFB',
+    background: '#F6F8F7',
     foreground: '#111827',
     card: '#FFFFFF',
-    cardAlt: '#F3F4F6',
+    cardAlt: '#EEF3F0',
     muted: '#6B7280',
     muted2: '#9CA3AF',
     border: '#E5E7EB',
@@ -18,6 +18,11 @@ export const theme = {
     primary: '#064E3B',
     primarySoft: 'rgba(5,150,105,0.12)',
     accent: '#059669',
+    accentSoft: '#E7F7EF',
+    info: '#2563EB',
+    infoSoft: '#EFF6FF',
+    warning: '#D97706',
+    warningSoft: '#FFF7ED',
     titleBg: '#F3F4F6',
     onPrimary: '#FFFFFF',
 
@@ -38,6 +43,7 @@ export const theme = {
     errorContainer: '#FEE2E2',
     errorOutline: '#FCA5A5',
     successOutline: '#86EFAC',
+    surfaceShadow: 'rgba(17,24,39,0.14)',
 
     // Common translucent accents used across badges/selected states
     primaryOutlineSoft: 'rgba(5,150,105,0.18)',
@@ -49,9 +55,9 @@ export const theme = {
   },
   radius: {
     sm: 8,
-    md: 12,
-    lg: 16,
-    xl: 22,
+    md: 10,
+    lg: 14,
+    xl: 18,
   },
   spacing: {
     xs: 6,
@@ -71,8 +77,8 @@ export const theme = {
   },
   typography: {
     titleLarge: {
-      fontSize: 24,
-      lineHeight: 30,
+      fontSize: 22,
+      lineHeight: 29,
       fontWeight: '900',
     },
     titleMedium: {

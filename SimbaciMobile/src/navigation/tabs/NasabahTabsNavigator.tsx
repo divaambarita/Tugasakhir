@@ -3,20 +3,17 @@ import {
   createBottomTabNavigator,
   type BottomTabBarProps,
 } from '@react-navigation/bottom-tabs';
+import {mobileTabScreenOptions} from '../options';
 
 import {AppBottomTabBar} from '../../components/AppBottomTabBar';
 
 import {NasabahSaldoStackNavigator} from '../stacks/NasabahSaldoStackNavigator';
 import {NasabahSetoranStackNavigator} from '../stacks/NasabahSetoranStackNavigator';
-import {NasabahMonitoringStackNavigator} from '../stacks/NasabahMonitoringStackNavigator';
-import {NasabahHargaStackNavigator} from '../stacks/NasabahHargaStackNavigator';
 import {ProfileScreen} from '../../screens/ProfileScreen';
 
 export type NasabahTabParamList = {
   NasabahSaldo: undefined;
   NasabahSetoran: undefined;
-  NasabahMonitoring: undefined;
-  NasabahHarga: undefined;
   Profile: undefined;
 };
 
@@ -28,9 +25,7 @@ const renderTabBar = (props: BottomTabBarProps) => (
 
 export function NasabahTabsNavigator(): React.JSX.Element {
   return (
-    <Tab.Navigator
-      tabBar={renderTabBar}
-      screenOptions={{headerTitleAlign: 'center'}}>
+    <Tab.Navigator tabBar={renderTabBar} screenOptions={mobileTabScreenOptions}>
       <Tab.Screen
         name="NasabahSaldo"
         component={NasabahSaldoStackNavigator}
@@ -42,23 +37,9 @@ export function NasabahTabsNavigator(): React.JSX.Element {
         options={{title: 'Setoran', tabBarLabel: 'Setoran', headerShown: false}}
       />
       <Tab.Screen
-        name="NasabahMonitoring"
-        component={NasabahMonitoringStackNavigator}
-        options={{
-          title: 'Monitoring',
-          tabBarLabel: 'Monitoring',
-          headerShown: false,
-        }}
-      />
-      <Tab.Screen
-        name="NasabahHarga"
-        component={NasabahHargaStackNavigator}
-        options={{title: 'Harga', tabBarLabel: 'Harga', headerShown: false}}
-      />
-      <Tab.Screen
         name="Profile"
         component={ProfileScreen}
-        options={{title: 'Profile', tabBarLabel: 'Profile'}}
+        options={{title: 'Profil', tabBarLabel: 'Profil'}}
       />
     </Tab.Navigator>
   );

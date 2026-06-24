@@ -4,6 +4,7 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
   StyleSheet,
   View,
 } from 'react-native';
@@ -21,12 +22,38 @@ export function LoginScreen(): React.JSX.Element {
   const [noTelp, setNoTelp] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [submitting, setSubmitting] = React.useState(false);
+  const [formError, setFormError] = React.useState<string | null>(null);
+
+  const onChangeNoTelp = (value: string) => {
+    setNoTelp(value);
+    setFormError(null);
+    clearError();
+  };
+
+  const onChangePassword = (value: string) => {
+    setPassword(value);
+    setFormError(null);
+    clearError();
+  };
 
   const onSubmit = async () => {
     clearError();
+    setFormError(null);
+
+    if (noTelp.trim().length < 9) {
+      setFormError('Nomor telepon minimal 9 digit.');
+      return;
+    }
+    if (password.length < 6) {
+      setFormError('Kata sandi minimal 6 karakter.');
+      return;
+    }
+
     setSubmitting(true);
     try {
       await login(noTelp.trim(), password);
+    } catch {
+      setFormError('Tidak dapat terhubung ke server. Silakan coba lagi.');
     } finally {
       setSubmitting(false);
     }
@@ -36,53 +63,64 @@ export function LoginScreen(): React.JSX.Element {
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={styles.container}>
-      <Card>
-        <View style={styles.logos}>
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={styles.scrollContent}>
+        <View style={styles.brandPanel}>
           <Image
-            source={require('../assets/images/simbaci.png')}
-            style={styles.logoSimbaci}
-            accessibilityLabel="Logo Simbaci"
+            source={require('../assets/images/netrash.png')}
+            style={styles.logoNetrash}
+            accessibilityLabel="Logo Netrash"
           />
-          <Image
-            source={require('../assets/images/uplogo.png')}
-            style={styles.logoUp}
-            accessibilityLabel="Logo Universitas Pertamina"
-          />
+          {/* <Text style={styles.brandTitle}>SIMBACI Mobile</Text>
+          <Text style={styles.brandSubtitle}>Masuk ke akun Bank Sampah</Text> */}
         </View>
 
-        <AppTextField
-          label="No. Telp"
-          value={noTelp}
-          onChangeText={setNoTelp}
-          placeholder="contoh: 081234567890"
-          keyboardType="phone-pad"
-          autoCapitalize="none"
-        />
+        <Card style={styles.formCard}>
+          <View style={styles.partnerLogoWrap}>
+            <Image
+              source={require('../assets/images/uplogo.png')}
+              style={styles.logoUp}
+              accessibilityLabel="Logo Universitas Pertamina"
+            />
+          </View>
 
-        <AppTextField
-          label="Password"
-          value={password}
-          onChangeText={setPassword}
-          placeholder="password"
-          secureTextEntry
-        />
-
-        {lastError ? <InlineAlert message={lastError} /> : null}
-
-        <View style={styles.actions}>
-          <AppButton
-            title={submitting ? 'Masuk…' : 'Masuk'}
-            onPress={onSubmit}
-            loading={submitting}
-            disabled={submitting || !noTelp.trim() || !password}
+          <AppTextField
+            label="No. Telp"
+            value={noTelp}
+            onChangeText={onChangeNoTelp}
+            placeholder="Contoh: 081234567890"
+            keyboardType="phone-pad"
+            autoCapitalize="none"
           />
-          {submitting ? (
-            <View style={styles.spinner}>
-              <ActivityIndicator />
-            </View>
+
+          <AppTextField
+            label="Kata Sandi"
+            value={password}
+            onChangeText={onChangePassword}
+            placeholder="Masukkan kata sandi"
+            secureTextEntry
+          />
+
+          {formError || lastError ? (
+            <InlineAlert message={formError ?? lastError ?? ''} />
           ) : null}
-        </View>
-      </Card>
+
+          <View style={styles.actions}>
+            <AppButton
+              title={submitting ? 'Masuk...' : 'Masuk'}
+              onPress={onSubmit}
+              loading={submitting}
+              disabled={submitting || !noTelp.trim() || !password}
+            />
+            {submitting ? (
+              <View style={styles.spinner}>
+                <ActivityIndicator />
+              </View>
+            ) : null}
+          </View>
+        </Card>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
@@ -90,23 +128,53 @@ export function LoginScreen(): React.JSX.Element {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    padding: theme.spacing.md,
     backgroundColor: theme.colors.background,
   },
-  logos: {
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: theme.spacing.md,
+  },
+  brandPanel: {
+    borderRadius: theme.radius.xl,
+    paddingVertical: theme.spacing.xl,
+    paddingHorizontal: theme.spacing.lg,
+    marginBottom: theme.spacing.md,
+    backgroundColor: theme.colors.card,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    alignItems: 'center',
+  },
+  logoNetrash: {
+    width: 140,
+    height: 128,
+    resizeMode: 'contain',
+  },
+  brandTitle: {
+    marginTop: theme.spacing.lg,
+    color: theme.colors.onPrimary,
+    fontSize: 24,
+    lineHeight: 30,
+    fontWeight: '900',
+    textAlign: 'center',
+  },
+  brandSubtitle: {
+    marginTop: theme.spacing.xs,
+    color: theme.colors.onPrimary,
+    opacity: 0.88,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  formCard: {
+    paddingTop: theme.spacing.lg,
+  },
+  partnerLogoWrap: {
     alignItems: 'center',
     marginBottom: theme.spacing.sm,
   },
-  logoSimbaci: {
-    width: '100%',
-    height: 44,
-    resizeMode: 'contain',
-  },
   logoUp: {
-    marginTop: theme.spacing.sm,
-    width: 120,
-    height: 120,
+    width: 74,
+    height: 74,
     resizeMode: 'contain',
   },
   actions: {

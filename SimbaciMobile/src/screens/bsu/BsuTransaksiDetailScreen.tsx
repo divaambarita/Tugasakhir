@@ -142,6 +142,7 @@ export function BsuTransaksiDetailScreen(): React.JSX.Element {
               return;
             }
             await load();
+            Alert.alert('Berhasil', 'Detail transaksi berhasil dihapus.');
           } finally {
             setDeletingKey(null);
           }

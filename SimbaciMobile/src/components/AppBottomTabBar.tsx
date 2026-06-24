@@ -10,18 +10,14 @@ import {
   Trash,
   User,
   Users,
-  UserCircle2,
   UserPlus,
   Building2,
   Wallet,
   ClipboardListIcon,
   BarChart3,
-  LineChartIcon,
   Tag,
-  Banknote,
-  ChartBarIcon,
-  DollarSign,
   ClipboardList,
+  History,
 } from 'lucide-react-native';
 
 type LucideIconProps = React.ComponentProps<typeof Home>;
@@ -42,7 +38,7 @@ function getTabIcon(routeName: string): LucideIconComponent {
     case 'BsuPengurus':
       return Users;
     case 'BsuHome':
-      return Home; 
+      return Home;
     case 'BsuRegistration':
       return Building2;
     case 'AdminCreateAccount':
@@ -54,7 +50,7 @@ function getTabIcon(routeName: string): LucideIconComponent {
     case 'BsuTransaksi':
       return ClipboardListIcon;
     case 'BsuKeuangan':
-      return  BarChart3;
+      return BarChart3;
     case 'BsuSaldo':
       return Wallet;
     case 'NasabahSaldo':
@@ -68,7 +64,7 @@ function getTabIcon(routeName: string): LucideIconComponent {
     case 'VolunteerVerification':
       return ClipboardList;
     case 'VolunteerRiwayat':
-      return ClipboardList;
+      return History;
     case 'Profile':
       return User;
     default:
@@ -111,8 +107,10 @@ export function AppBottomTabBar(props: BottomTabBarProps): React.JSX.Element {
           };
 
           const options = props.descriptors[route.key]?.options;
-          const Icon = index === 0 ? Home : getTabIcon(route.name); // left-most = Home icon
-          const iconColor = isFocused ? theme.colors.accent : theme.colors.muted;
+          const Icon = getTabIcon(route.name);
+          const iconColor = isFocused
+            ? theme.colors.primary
+            : theme.colors.muted;
           const label =
             (options?.tabBarLabel as string | undefined) ??
             (options?.title as string | undefined) ??
@@ -144,7 +142,9 @@ export function AppBottomTabBar(props: BottomTabBarProps): React.JSX.Element {
                 ]}>
                 <Icon color={iconColor} size={22} />
               </View>
-              <Text style={[styles.label, {color: labelColor}]} numberOfLines={1}>
+              <Text
+                style={[styles.label, {color: labelColor}]}
+                numberOfLines={1}>
                 {label}
               </Text>
             </Pressable>
@@ -163,41 +163,44 @@ const styles = StyleSheet.create({
     ...(Platform.OS === 'android'
       ? {elevation: theme.elevation.md}
       : {
-          shadowColor: theme.colors.onSurface,
-          shadowOpacity: 0.08,
+          shadowColor: theme.colors.surfaceShadow,
+          shadowOpacity: 1,
           shadowRadius: 18,
-          shadowOffset: {width: 0, height: -6},
+          shadowOffset: {width: 0, height: -8},
         }),
   },
   row: {
     flexDirection: 'row',
-    paddingTop: 10,
+    paddingTop: 8,
+    paddingHorizontal: 6,
   },
   item: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    minHeight: 58,
   },
   itemFocused: {
     // subtle focus state: helps affordance without being loud
   },
   iconWrap: {
-    width: 40,
-    height: 32,
+    width: 42,
+    height: 30,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 999,
+    borderRadius: theme.radius.xl,
   },
   iconWrapFocused: {
-    backgroundColor: theme.colors.primaryContainer,
+    backgroundColor: theme.colors.accentSoft,
     borderWidth: 1,
     borderColor: theme.colors.primaryOutline,
   },
   label: {
-    marginTop: 2,
+    marginTop: 3,
     fontSize: 11,
     fontWeight: '800',
+    lineHeight: 14,
   },
   itemPressed: {
     opacity: Platform.OS === 'ios' ? 0.5 : 0.7,

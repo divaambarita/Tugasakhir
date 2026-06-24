@@ -14,6 +14,34 @@ const MOBILE_ALLOWED_ROLES = new Set(['nasabah', 'bsu', 'volunteer']);
 const MOBILE_WEB_ONLY_ROLE_MESSAGE =
   'Akses Terbatas: Akun manajerial hanya dapat diakses melalui Dashboard Web. Silakan gunakan akun Nasabah, BSU, atau Volunteer untuk aplikasi Mobile Android.';
 
+function localizeLoginError(message?: string): string {
+  if (!message) {
+    return 'Gagal masuk. Silakan coba lagi.';
+  }
+
+  const normalized = message.toLowerCase();
+  if (
+    normalized.includes('password') &&
+    normalized.includes('at least 6 character')
+  ) {
+    return 'Kata sandi minimal 6 karakter.';
+  }
+  if (
+    normalized.includes('notelp') &&
+    normalized.includes('at least 9 character')
+  ) {
+    return 'Nomor telepon minimal 9 digit.';
+  }
+  if (normalized.includes('invalid server response')) {
+    return 'Respons server tidak dapat diproses. Silakan coba lagi.';
+  }
+  if (normalized === 'login failed') {
+    return 'Gagal masuk. Silakan periksa kembali data Anda.';
+  }
+
+  return message;
+}
+
 type AuthState = {
   isRestoring: boolean;
   user: CurrentUser | null;
@@ -72,7 +100,7 @@ export function AuthProvider({
     if (!res.success) {
       setState(prev => ({
         ...prev,
-        lastError: res.message ?? 'Login failed',
+        lastError: localizeLoginError(res.message),
       }));
       return;
     }

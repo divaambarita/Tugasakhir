@@ -1,8 +1,10 @@
 import React from 'react';
-import {ActivityIndicator, Alert, StyleSheet, Text, View} from 'react-native';
-import {useRoute} from '@react-navigation/native';
+import {Alert, Image, StyleSheet, Text, View} from 'react-native';
+import {useNavigation, useRoute} from '@react-navigation/native';
 import type {RouteProp} from '@react-navigation/native';
+import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {launchImageLibrary} from 'react-native-image-picker';
+import {Building2, Camera, ClipboardEdit} from 'lucide-react-native';
 
 import {useAuth} from '../auth/AuthContext';
 import {saveVerification} from '../api/volunteer';
@@ -17,6 +19,7 @@ import {SectionTitle} from '../components/ui/SectionTitle';
 import {theme} from '../components/ui/theme';
 
 type R = RouteProp<VolunteerVerificationStackParamList, 'VerificationForm'>;
+type Nav = NativeStackNavigationProp<VolunteerVerificationStackParamList>;
 
 function fasilitasToPayload(text: string): Array<Record<string, unknown>> {
   const items = text
@@ -29,18 +32,29 @@ function fasilitasToPayload(text: string): Array<Record<string, unknown>> {
 
 export function VolunteerVerificationFormScreen(): React.JSX.Element {
   const route = useRoute<R>();
+  const navigation = useNavigation<Nav>();
   const {user} = useAuth();
 
-  const {bsuId, bsuName} = route.params;
+  const {bsuId, bsuName, mode = 'create', initialData} = route.params;
+  const isEditing = mode === 'edit';
 
-  const [loading, setLoading] = React.useState(false);
+  const [uploading, setUploading] = React.useState(false);
+  const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
-  const [lokasi, setLokasi] = React.useState('');
-  const [luasTempat, setLuasTempat] = React.useState('');
-  const [kondisiBangunan, setKondisiBangunan] = React.useState('');
-  const [fasilitasText, setFasilitasText] = React.useState('');
-  const [fotoKunjunganUrl, setFotoKunjunganUrl] = React.useState('');
+  const [lokasi, setLokasi] = React.useState(initialData?.lokasi ?? '');
+  const [luasTempat, setLuasTempat] = React.useState(
+    initialData?.luasTempat ?? '',
+  );
+  const [kondisiBangunan, setKondisiBangunan] = React.useState(
+    initialData?.kondisiBangunan ?? '',
+  );
+  const [fasilitasText, setFasilitasText] = React.useState(
+    initialData?.fasilitasText ?? '',
+  );
+  const [fotoKunjunganUrl, setFotoKunjunganUrl] = React.useState(
+    initialData?.fotoKunjunganUrl ?? '',
+  );
 
   const pickAndUploadFoto = async () => {
     if (!user) {
@@ -56,9 +70,7 @@ export function VolunteerVerificationFormScreen(): React.JSX.Element {
         selectionLimit: 1,
       });
     } catch {
-      setError(
-        'Fitur pilih foto belum tersedia di build ini. Coba rebuild Android: `cd android && ./gradlew clean` lalu `npm run android`.',
-      );
+      setError('Fitur pilih foto tidak dapat dibuka. Silakan coba lagi.');
       return;
     }
 
@@ -72,7 +84,7 @@ export function VolunteerVerificationFormScreen(): React.JSX.Element {
       return;
     }
 
-    setLoading(true);
+    setUploading(true);
     try {
       const uploadRes = await uploadSingleImage(
         {
@@ -84,19 +96,22 @@ export function VolunteerVerificationFormScreen(): React.JSX.Element {
       );
 
       if (!uploadRes.success) {
-        setError(uploadRes.message ?? 'Gagal upload foto');
+        setError(uploadRes.message ?? 'Gagal mengunggah foto');
         return;
       }
 
       const url = uploadRes.data?.[0]?.path;
       if (!url) {
-        setError('Gagal membaca hasil upload.');
+        setError('Gagal membaca hasil unggahan.');
         return;
       }
 
       setFotoKunjunganUrl(url);
+      Alert.alert('Berhasil', 'Foto kunjungan berhasil diunggah.');
+    } catch {
+      setError('Gagal mengunggah foto kunjungan. Silakan coba lagi.');
     } finally {
-      setLoading(false);
+      setUploading(false);
     }
   };
 
@@ -107,33 +122,27 @@ export function VolunteerVerificationFormScreen(): React.JSX.Element {
     if (user.roleName !== 'volunteer') {
       return 'Akses ditolak. Hanya Volunteer.';
     }
-    if (!lokasi.trim()) {
-      return 'Lokasi wajib diisi.';
+    if (lokasi.trim().length < 3) {
+      return 'Lokasi minimal 3 karakter.';
     }
-    if (!luasTempat.trim()) {
-      return 'Luas tempat wajib diisi.';
+    if (luasTempat.trim().length < 3) {
+      return 'Luas tempat minimal 3 karakter.';
     }
-    if (!kondisiBangunan.trim()) {
-      return 'Kondisi bangunan wajib diisi.';
+    if (kondisiBangunan.trim().length < 3) {
+      return 'Kondisi bangunan minimal 3 karakter.';
     }
     if (!fotoKunjunganUrl.trim()) {
-      return 'Foto kunjungan wajib diupload.';
+      return 'Foto kunjungan wajib dipilih.';
     }
     return null;
   };
 
-  const submit = async () => {
+  const save = async () => {
     if (!user) {
       return;
     }
 
-    const err = validate();
-    if (err) {
-      setError(err);
-      return;
-    }
-
-    setLoading(true);
+    setSubmitting(true);
     setError(null);
     try {
       const res = await saveVerification(user.token, {
@@ -151,10 +160,54 @@ export function VolunteerVerificationFormScreen(): React.JSX.Element {
         return;
       }
 
-      Alert.alert('Berhasil', 'Verifikasi berhasil disimpan.');
+      Alert.alert(
+        'Berhasil',
+        isEditing
+          ? 'Hasil survei berhasil diperbarui.'
+          : 'Hasil verifikasi berhasil dikirim.',
+        [
+          {
+            text: isEditing ? 'Kembali ke Riwayat' : 'Kembali ke Daftar',
+            onPress: () => navigation.goBack(),
+          },
+        ],
+      );
+    } catch {
+      setError(
+        isEditing
+          ? 'Gagal memperbarui hasil survei. Silakan coba lagi.'
+          : 'Gagal mengirim hasil verifikasi. Silakan coba lagi.',
+      );
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
+  };
+
+  const submit = () => {
+    const err = validate();
+    if (err) {
+      setError(err);
+      return;
+    }
+
+    if (isEditing) {
+      Alert.alert(
+        'Konfirmasi Perubahan',
+        'Simpan perubahan pada hasil survei ini?',
+        [
+          {text: 'Batal', style: 'cancel'},
+          {
+            text: 'Simpan',
+            onPress: () => {
+              save();
+            },
+          },
+        ],
+      );
+      return;
+    }
+
+    save();
   };
 
   if (!user) {
@@ -168,25 +221,46 @@ export function VolunteerVerificationFormScreen(): React.JSX.Element {
   return (
     <Screen scroll>
       <SectionTitle
-        title="Form Verifikasi"
-        subtitle={`${bsuName} (ID: ${bsuId})`}
+        title={isEditing ? 'Edit Hasil Survei' : 'Verifikasi BSU'}
+        subtitle={
+          isEditing
+            ? 'Perbarui data kunjungan yang masih menunggu persetujuan.'
+            : bsuName
+        }
       />
 
       {error ? <InlineAlert message={error} /> : null}
 
-      {loading ? (
-        <View style={styles.loadingRow}>
-          <ActivityIndicator />
-          <Text style={styles.loadingText}>Memproses…</Text>
+      <Card style={styles.bsuCard}>
+        <View style={styles.bsuIcon}>
+          <Building2 color={theme.colors.onPrimary} size={25} />
         </View>
-      ) : null}
+        <View style={styles.bsuText}>
+          <Text style={styles.bsuLabel}>
+            {isEditing ? 'Hasil survei untuk' : 'BSU yang akan disurvei'}
+          </Text>
+          <Text style={styles.bsuName}>{bsuName}</Text>
+        </View>
+      </Card>
 
       <Card style={styles.formCard}>
+        <View style={styles.formHeading}>
+          <View style={styles.formIcon}>
+            <ClipboardEdit color={theme.colors.primary} size={20} />
+          </View>
+          <View style={styles.formHeadingText}>
+            <Text style={styles.formTitle}>Data Kunjungan</Text>
+            <Text style={styles.formSubtitle}>
+              Lengkapi sesuai kondisi di lokasi.
+            </Text>
+          </View>
+        </View>
+
         <AppTextField
-          label="Lokasi"
+          label="Lokasi Kunjungan"
           value={lokasi}
           onChangeText={setLokasi}
-          placeholder="Alamat / titik lokasi"
+          placeholder="Alamat atau titik lokasi BSU"
         />
 
         <AppTextField
@@ -200,37 +274,58 @@ export function VolunteerVerificationFormScreen(): React.JSX.Element {
           label="Kondisi Bangunan"
           value={kondisiBangunan}
           onChangeText={setKondisiBangunan}
-          placeholder="Contoh: baik"
+          placeholder="Contoh: Baik dan layak digunakan"
         />
 
         <AppTextField
           label="Fasilitas (pisahkan dengan koma)"
           value={fasilitasText}
           onChangeText={setFasilitasText}
-          placeholder="contoh: timbangan, karung, gerobak"
+          placeholder="Contoh: Timbangan, karung, gerobak"
         />
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Foto Kunjungan</Text>
-          <AppButton
-            title={fotoKunjunganUrl ? 'Foto Terupload' : 'Upload Foto'}
-            onPress={pickAndUploadFoto}
-            variant={fotoKunjunganUrl ? 'secondary' : 'primary'}
-            disabled={loading}
-          />
+          <View style={styles.photoHeading}>
+            <Camera color={theme.colors.primary} size={20} />
+            <Text style={styles.sectionTitle}>Dokumentasi Kunjungan</Text>
+          </View>
+          <Text style={styles.helperText}>
+            Pastikan area dan kondisi BSU terlihat dengan jelas.
+          </Text>
           {fotoKunjunganUrl ? (
-            <Text style={styles.meta} numberOfLines={1}>
-              {fotoKunjunganUrl}
-            </Text>
-          ) : null}
+            <Image
+              source={{uri: fotoKunjunganUrl}}
+              style={styles.photoPreview}
+              accessibilityLabel={`Foto kunjungan ${bsuName}`}
+            />
+          ) : (
+            <View style={styles.photoPlaceholder}>
+              <View style={styles.photoPlaceholderIcon}>
+                <Camera color={theme.colors.muted} size={26} />
+              </View>
+              <Text style={styles.photoPlaceholderTitle}>
+                Belum ada foto kunjungan
+              </Text>
+              <Text style={styles.photoPlaceholderText}>
+                Pilih satu foto yang paling jelas.
+              </Text>
+            </View>
+          )}
+          <AppButton
+            title={fotoKunjunganUrl ? 'Ganti Foto' : 'Pilih Foto'}
+            onPress={pickAndUploadFoto}
+            variant="secondary"
+            disabled={uploading || submitting}
+            loading={uploading}
+          />
         </View>
 
         <View style={styles.actions}>
           <AppButton
-            title="Simpan"
+            title={isEditing ? 'Simpan Perubahan' : 'Kirim Hasil Verifikasi'}
             onPress={submit}
-            disabled={loading}
-            loading={loading}
+            disabled={uploading || submitting}
+            loading={submitting}
           />
         </View>
       </Card>
@@ -239,33 +334,124 @@ export function VolunteerVerificationFormScreen(): React.JSX.Element {
 }
 
 const styles = StyleSheet.create({
-  loadingRow: {
+  bsuCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: theme.spacing.md,
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
   },
-  loadingText: {
-    marginLeft: 10,
-    color: theme.colors.muted,
-    fontWeight: '700',
+  bsuIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: theme.radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.onPrimaryRipple,
+  },
+  bsuText: {
+    flex: 1,
+    marginLeft: theme.spacing.md,
+  },
+  bsuLabel: {
+    ...theme.typography.caption,
+    color: theme.colors.onPrimary,
+    opacity: 0.8,
+  },
+  bsuName: {
+    marginTop: 2,
+    ...theme.typography.titleMedium,
+    color: theme.colors.onPrimary,
   },
   formCard: {
     borderRadius: theme.radius.lg,
   },
+  formHeading: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: theme.spacing.sm,
+    paddingBottom: theme.spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+  },
+  formIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: theme.radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.accentSoft,
+  },
+  formHeadingText: {
+    flex: 1,
+    marginLeft: theme.spacing.sm,
+  },
+  formTitle: {
+    ...theme.typography.titleMedium,
+    color: theme.colors.foreground,
+  },
+  formSubtitle: {
+    marginTop: 2,
+    ...theme.typography.caption,
+    color: theme.colors.muted,
+  },
   section: {
     marginTop: theme.spacing.md,
-    paddingTop: theme.spacing.sm,
+    paddingTop: theme.spacing.md,
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
   },
+  photoHeading: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+  },
   sectionTitle: {
     fontWeight: '900',
-    marginBottom: theme.spacing.sm,
     color: theme.colors.foreground,
   },
-  meta: {
+  helperText: {
     color: theme.colors.muted,
     marginTop: theme.spacing.xs,
+    marginBottom: theme.spacing.sm,
+    fontWeight: '600',
+  },
+  photoPreview: {
+    width: '100%',
+    height: 180,
+    marginBottom: theme.spacing.sm,
+    borderRadius: theme.radius.md,
+    resizeMode: 'cover',
+    backgroundColor: theme.colors.surfaceVariant,
+  },
+  photoPlaceholder: {
+    height: 155,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: theme.spacing.sm,
+    borderRadius: theme.radius.md,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: theme.colors.inputBorder,
+    backgroundColor: theme.colors.surfaceVariant,
+  },
+  photoPlaceholderIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.card,
+  },
+  photoPlaceholderTitle: {
+    marginTop: theme.spacing.sm,
+    ...theme.typography.body,
+    color: theme.colors.foreground,
+  },
+  photoPlaceholderText: {
+    marginTop: 2,
+    ...theme.typography.caption,
+    color: theme.colors.muted,
   },
   actions: {
     marginTop: theme.spacing.md,

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/splash_background" />
+    <item
+        android:width="210dp"
+        android:height="210dp"
+        android:gravity="center"
+        android:drawable="@drawable/splash_logo_background" />
+    <item
+        android:width="170dp"
+        android:height="155dp"
+        android:gravity="center"
+        android:drawable="@drawable/netrash_logo" />
+</layer-list>

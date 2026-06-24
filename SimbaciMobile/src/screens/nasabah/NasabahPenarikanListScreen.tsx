@@ -7,21 +7,15 @@ import {
   Text,
   View,
 } from 'react-native';
-import {useFocusEffect, useNavigation} from '@react-navigation/native';
-import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import {useFocusEffect} from '@react-navigation/native';
 
 import {useAuth} from '../../auth/AuthContext';
 import {getPenarikanByNasabah, type PenarikanRow} from '../../api/penarikan';
-import type {NasabahSaldoStackParamList} from '../../navigation/stacks/NasabahSaldoStackNavigator';
-
-import {AppButton} from '../../components/ui/AppButton';
 import {Card} from '../../components/ui/Card';
 import {InlineAlert} from '../../components/ui/InlineAlert';
 import {Screen} from '../../components/ui/Screen';
 import {theme} from '../../components/ui/theme';
 import {isoToJakartaYmd} from '../../utils/date';
-
-type Nav = NativeStackNavigationProp<NasabahSaldoStackParamList>;
 
 type Row = {
   key: string;
@@ -56,7 +50,6 @@ function mapRow(p: PenarikanRow): Row {
 }
 
 export function NasabahPenarikanListScreen(): React.JSX.Element {
-  const navigation = useNavigation<Nav>();
   const {user} = useAuth();
 
   const hasLoadedOnce = React.useRef(false);
@@ -147,13 +140,6 @@ export function NasabahPenarikanListScreen(): React.JSX.Element {
     <Screen>
       {error ? <InlineAlert message={error} /> : null}
 
-      <View style={styles.actions}>
-        <AppButton
-          title="Tarik Saldo"
-          onPress={() => navigation.navigate('NasabahPenarikanCreate')}
-        />
-      </View>
-
       <FlatList
         data={items}
         keyExtractor={item => item.key}
@@ -210,9 +196,6 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.sm,
     color: theme.colors.muted,
     fontWeight: '700',
-  },
-  actions: {
-    marginBottom: theme.spacing.sm,
   },
   rowCard: {
     marginBottom: theme.spacing.sm,

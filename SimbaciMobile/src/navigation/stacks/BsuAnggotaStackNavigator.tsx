@@ -1,14 +1,9 @@
 import React from 'react';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import {Pressable, StyleSheet, Text} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
-import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import {mobileStackScreenOptions} from '../options';
 
 import {BsuNasabahListScreen} from '../../screens/bsu/BsuNasabahListScreen';
 import {BsuNasabahFormScreen} from '../../screens/bsu/BsuNasabahFormScreen';
-// import {BsuPengurusListScreen} from '../../screens/bsu/BsuPengurusListScreen';
-// import {BsuPengurusFormScreen} from '../../screens/bsu/BsuPengurusFormScreen';
-import {theme} from '../../components/ui/theme';
 
 export type BsuAnggotaStackParamList = {
   BsuNasabahList: undefined;
@@ -19,10 +14,8 @@ export type BsuAnggotaStackParamList = {
 
 const Stack = createNativeStackNavigator<BsuAnggotaStackParamList>();
 
-type Nav = NativeStackNavigationProp<BsuAnggotaStackParamList>;
-
 // NOTE: Disabled (commented) BSU Pengurus list feature.
-// Re-enable by uncommenting the imports above, the header actions below,
+// Re-enable by restoring the required imports, the header actions below,
 // and the Stack.Screen registrations further down.
 
 // function HeaderKePengurus(): React.JSX.Element {
@@ -53,7 +46,7 @@ type Nav = NativeStackNavigationProp<BsuAnggotaStackParamList>;
 
 export function BsuAnggotaStackNavigator(): React.JSX.Element {
   return (
-    <Stack.Navigator screenOptions={{headerTitleAlign: 'center'}}>
+    <Stack.Navigator screenOptions={mobileStackScreenOptions}>
       <Stack.Screen
         name="BsuNasabahList"
         component={BsuNasabahListScreen}
@@ -89,13 +82,3 @@ export function BsuAnggotaStackNavigator(): React.JSX.Element {
     </Stack.Navigator>
   );
 }
-
-const styles = StyleSheet.create({
-  actionText: {
-    color: theme.colors.primary,
-    fontWeight: '900',
-  },
-  pressed: {
-    opacity: 0.7,
-  },
-});

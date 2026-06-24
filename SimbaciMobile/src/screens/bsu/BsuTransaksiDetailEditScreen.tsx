@@ -81,7 +81,7 @@ export function BsuTransaksiDetailEditScreen(): React.JSX.Element {
         return;
       }
 
-      Alert.alert('Berhasil', 'Detail transaksi berhasil diupdate.');
+      Alert.alert('Berhasil', 'Detail transaksi berhasil diperbarui.');
       navigation.goBack();
     } finally {
       setSubmitting(false);

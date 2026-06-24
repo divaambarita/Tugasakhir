@@ -24,6 +24,7 @@ import type {BsuHomeStackParamList} from '../../navigation/stacks/BsuHomeStackNa
 import {AppButton} from '../../components/ui/AppButton';
 import {AppTextField} from '../../components/ui/AppTextField';
 import {Card} from '../../components/ui/Card';
+import {EmptyState} from '../../components/ui/EmptyState';
 import {InlineAlert} from '../../components/ui/InlineAlert';
 import {Screen} from '../../components/ui/Screen';
 import {theme} from '../../components/ui/theme';
@@ -161,7 +162,6 @@ export function BsuTransaksiCreateScreen(): React.JSX.Element {
     return jenisSampah.reduce((sum, r) => sum + calcItemTotal(beratById, r), 0);
   }, [beratById, jenisSampah]);
 
-
   const onSubmit = async () => {
     if (!user) {
       return;
@@ -183,7 +183,6 @@ export function BsuTransaksiCreateScreen(): React.JSX.Element {
       setError('Belum ada jenis sampah/harga BSU. Atur di menu Harga Sampah.');
       return;
     }
-
 
     const items: CreateTransaksiItem[] = [];
     for (const r of jenisSampah) {
@@ -211,11 +210,11 @@ export function BsuTransaksiCreateScreen(): React.JSX.Element {
       return;
     }
 
-  const payload: CreateTransaksiRequest = {
-  idNasabah: selectedNasabah.idNasabah,
-  items,
-  bsuId,
-};
+    const payload: CreateTransaksiRequest = {
+      idNasabah: selectedNasabah.idNasabah,
+      items,
+      bsuId,
+    };
 
     setSubmitting(true);
     try {
@@ -256,13 +255,21 @@ export function BsuTransaksiCreateScreen(): React.JSX.Element {
           const selected = selectedNasabah?.idNasabah === item.idNasabah;
           return (
             <Pressable
-              onPress={() => setSelectedNasabah(item)}
+              onPress={() => {
+                setSelectedNasabah(item);
+                setNasabahSearch(item.nama);
+              }}
               style={({pressed}) => [
                 styles.nasabahRow,
                 selected ? styles.nasabahRowSelected : null,
                 pressed ? styles.pressed : null,
               ]}>
-              <Text style={styles.nasabahName}>{item.nama}</Text>
+              <View style={styles.nasabahTitleRow}>
+                <Text style={styles.nasabahName}>{item.nama}</Text>
+                {selected ? (
+                  <Text style={styles.selectedLabel}>Dipilih</Text>
+                ) : null}
+              </View>
               <Text style={styles.nasabahMeta}>{item.noTelp}</Text>
             </Pressable>
           );
@@ -282,7 +289,10 @@ export function BsuTransaksiCreateScreen(): React.JSX.Element {
           </>
         }
         ListEmptyComponent={
-          <Text style={styles.empty}>Tidak ada data nasabah.</Text>
+          <EmptyState
+            title="Nasabah tidak ditemukan"
+            description="Periksa kata pencarian atau tambahkan nasabah melalui menu Anggota."
+          />
         }
         ListFooterComponent={
           <Card style={styles.cardSpacing}>
@@ -318,16 +328,16 @@ export function BsuTransaksiCreateScreen(): React.JSX.Element {
 
             <View style={styles.totalRow}>
               <Text style={styles.totalText}>
-                Total Harga: {formatMoney(totalHarga)}
+                Total Nilai Setoran: Rp {formatMoney(totalHarga)}
               </Text>
             </View>
 
-           <AppButton
-  title="Simpan Transaksi"
-  onPress={onSubmit}
-  loading={submitting}
-  disabled={submitting}
-/>
+            <AppButton
+              title="Simpan Transaksi"
+              onPress={onSubmit}
+              loading={submitting}
+              disabled={submitting || !selectedNasabah || totalHarga <= 0}
+            />
           </Card>
         }
       />
@@ -362,13 +372,25 @@ const styles = StyleSheet.create({
   },
   nasabahRowSelected: {
     borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.primarySoft,
   },
   pressed: {
     opacity: 0.85,
   },
   nasabahName: {
+    flex: 1,
     fontWeight: '900',
     color: theme.colors.foreground,
+  },
+  nasabahTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+  },
+  selectedLabel: {
+    color: theme.colors.primary,
+    fontSize: theme.fontSize.sm,
+    fontWeight: '900',
   },
   nasabahMeta: {
     marginTop: theme.spacing.xs,

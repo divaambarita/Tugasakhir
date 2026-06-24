@@ -20,6 +20,7 @@ export function Screen(props: Props): React.JSX.Element {
       <ScrollView
         style={[styles.scroll, style]}
         contentContainerStyle={[styles.container, contentContainerStyle]}
+        contentInsetAdjustmentBehavior="automatic"
         keyboardShouldPersistTaps="handled"
         {...rest}
       />
@@ -34,14 +35,17 @@ const styles = StyleSheet.create({
   view: {
     flex: 1,
     backgroundColor: theme.colors.background,
-    padding: theme.spacing.md,
+    paddingHorizontal: theme.spacing.md,
+    paddingTop: theme.spacing.md,
+    paddingBottom: theme.spacing.xl,
   },
   scroll: {
     flex: 1,
     backgroundColor: theme.colors.background,
   },
   container: {
-    padding: theme.spacing.md,
-    paddingBottom: theme.spacing.xxl,
+    paddingHorizontal: theme.spacing.md,
+    paddingTop: theme.spacing.md,
+    paddingBottom: theme.spacing.xxl + theme.spacing.md,
   },
 });

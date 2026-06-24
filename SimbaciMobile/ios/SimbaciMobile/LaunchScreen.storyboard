@@ -16,25 +16,48 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="SimbaciMobile" textAlignment="center" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" minimumFontSize="18" translatesAutoresizingMaskIntoConstraints="NO" id="GJd-Yh-RWb">
-                                <rect key="frame" x="0.0" y="202" width="375" height="43"/>
-                                <fontDescription key="fontDescription" type="boldSystem" pointSize="36"/>
-                                <nil key="highlightedColor"/>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Net-rA-shBG">
+                                <rect key="frame" x="82.5" y="183.5" width="210" height="210"/>
+                                <subviews>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="NetrashLogo" translatesAutoresizingMaskIntoConstraints="NO" id="Net-rA-shLG">
+                                        <rect key="frame" x="18" y="25" width="174" height="160"/>
+                                    </imageView>
+                                </subviews>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstItem="Net-rA-shLG" firstAttribute="centerX" secondItem="Net-rA-shBG" secondAttribute="centerX" id="NLG-cx-001"/>
+                                    <constraint firstItem="Net-rA-shLG" firstAttribute="centerY" secondItem="Net-rA-shBG" secondAttribute="centerY" id="NLG-cy-002"/>
+                                    <constraint firstItem="Net-rA-shLG" firstAttribute="width" constant="174" id="NLG-wd-003"/>
+                                    <constraint firstItem="Net-rA-shLG" firstAttribute="height" constant="160" id="NLG-ht-004"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <real key="value" value="28"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                            </view>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="NETRASH" textAlignment="center" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Net-rA-shTT">
+                                <rect key="frame" x="98" y="417.5" width="179" height="36"/>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="30"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </label>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Powered by React Native" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="9" translatesAutoresizingMaskIntoConstraints="NO" id="MN2-I3-ftu">
-                                <rect key="frame" x="0.0" y="626" width="375" height="21"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <nil key="highlightedColor"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Kelola Sampah, Jaga Masa Depan" textAlignment="center" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Net-rA-shTG">
+                                <rect key="frame" x="71" y="461.5" width="233" height="18"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="14"/>
+                                <color key="textColor" white="1" alpha="0.82" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </label>
                         </subviews>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <color key="backgroundColor" red="0.02352941176" green="0.3058823529" blue="0.231372549" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="Bcu-3y-fUS" firstAttribute="bottom" secondItem="MN2-I3-ftu" secondAttribute="bottom" constant="20" id="OZV-Vh-mqD"/>
-                            <constraint firstItem="Bcu-3y-fUS" firstAttribute="centerX" secondItem="GJd-Yh-RWb" secondAttribute="centerX" id="Q3B-4B-g5h"/>
-                            <constraint firstItem="MN2-I3-ftu" firstAttribute="centerX" secondItem="Bcu-3y-fUS" secondAttribute="centerX" id="akx-eg-2ui"/>
-                            <constraint firstItem="MN2-I3-ftu" firstAttribute="leading" secondItem="Bcu-3y-fUS" secondAttribute="leading" id="i1E-0Y-4RG"/>
-                            <constraint firstItem="GJd-Yh-RWb" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="bottom" multiplier="1/3" constant="1" id="moa-c2-u7t"/>
-                            <constraint firstItem="GJd-Yh-RWb" firstAttribute="leading" secondItem="Bcu-3y-fUS" secondAttribute="leading" symbolic="YES" id="x7j-FC-K8j"/>
+                            <constraint firstItem="Net-rA-shBG" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="NSB-cx-101"/>
+                            <constraint firstItem="Net-rA-shBG" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" constant="-45" id="NSB-cy-102"/>
+                            <constraint firstItem="Net-rA-shBG" firstAttribute="width" constant="210" id="NSB-wd-103"/>
+                            <constraint firstItem="Net-rA-shBG" firstAttribute="height" constant="210" id="NSB-ht-104"/>
+                            <constraint firstItem="Net-rA-shTT" firstAttribute="top" secondItem="Net-rA-shBG" secondAttribute="bottom" constant="24" id="NST-tp-105"/>
+                            <constraint firstItem="Net-rA-shTT" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="NST-cx-106"/>
+                            <constraint firstItem="Net-rA-shTG" firstAttribute="top" secondItem="Net-rA-shTT" secondAttribute="bottom" constant="8" id="NSG-tp-107"/>
+                            <constraint firstItem="Net-rA-shTG" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="NSG-cx-108"/>
+                            <constraint firstItem="Net-rA-shTG" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="Bcu-3y-fUS" secondAttribute="leading" constant="24" id="NSG-ld-109"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="Bcu-3y-fUS"/>
                     </view>
@@ -44,4 +67,7 @@
             <point key="canvasLocation" x="52.173913043478265" y="375"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="NetrashLogo" width="303" height="277"/>
+    </resources>
 </document>

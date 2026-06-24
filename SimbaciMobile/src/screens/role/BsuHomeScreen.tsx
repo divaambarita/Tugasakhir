@@ -1,7 +1,7 @@
 import React from 'react';
-import {Button} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 
+import {AppButton} from '../../components/ui/AppButton';
 import {RoleHomeScreen} from '../RoleHomeScreen';
 
 export function BsuHomeScreen(): React.JSX.Element {
@@ -12,35 +12,39 @@ export function BsuHomeScreen(): React.JSX.Element {
       {/**
        * Disabled: BSU Pengurus list feature
        *
-       * <Button
+       * <AppButton
        *   title="Daftar Pengurus"
        *   // @ts-expect-error Cross-navigator route
        *   onPress={() => navigation.navigate('BsuPengurusList')}
        * />
        */}
-      <Button
+      <AppButton
         title="Daftar Nasabah"
         // This route lives in the parent tab navigator.
         // @ts-expect-error Cross-navigator route
         onPress={() => navigation.navigate('NasabahList')}
       />
-      <Button
+      <AppButton
         title="Harga Sampah"
+        variant="secondary"
         // @ts-expect-error Cross-navigator route
         onPress={() => navigation.navigate('BsuJenisSampahList')}
       />
-      <Button
+      <AppButton
         title="Transaksi"
+        variant="secondary"
         // @ts-expect-error Cross-navigator route
         onPress={() => navigation.navigate('BsuTransaksiList')}
       />
-      <Button
+      <AppButton
         title="Keuangan"
+        variant="secondary"
         // @ts-expect-error Cross-navigator route
         onPress={() => navigation.navigate('BsuKeuanganList')}
       />
-      <Button
+      <AppButton
         title="Saldo"
+        variant="secondary"
         // @ts-expect-error Cross-navigator route
         onPress={() => navigation.navigate('BsuSaldo')}
       />

@@ -21,6 +21,7 @@ import {
 import type {BsuAnggotaStackParamList} from '../../navigation/stacks/BsuAnggotaStackNavigator';
 import {AppButton} from '../../components/ui/AppButton';
 import {Card} from '../../components/ui/Card';
+import {EmptyState} from '../../components/ui/EmptyState';
 import {InlineAlert} from '../../components/ui/InlineAlert';
 import {Screen} from '../../components/ui/Screen';
 import {SectionTitle} from '../../components/ui/SectionTitle';
@@ -161,6 +162,7 @@ export function BsuNasabahListScreen(): React.JSX.Element {
             return;
           }
           await load();
+          Alert.alert('Berhasil', 'Nasabah berhasil dihapus.');
         },
       },
     ]);
@@ -243,7 +245,12 @@ export function BsuNasabahListScreen(): React.JSX.Element {
           </Card>
         )}
         ListEmptyComponent={
-          <Text style={styles.empty}>Tidak ada data nasabah.</Text>
+          <EmptyState
+            title="Belum ada nasabah"
+            description="Tambahkan nasabah agar pencatatan setoran dapat dimulai."
+            actionLabel="Tambah Nasabah"
+            onAction={() => navigation.navigate('BsuNasabahForm')}
+          />
         }
       />
     </Screen>
@@ -312,11 +319,5 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.sm,
     flexDirection: 'row',
     gap: theme.spacing.sm,
-  },
-  empty: {
-    textAlign: 'center',
-    marginTop: theme.spacing.lg,
-    color: theme.colors.muted,
-    fontWeight: '700',
   },
 });

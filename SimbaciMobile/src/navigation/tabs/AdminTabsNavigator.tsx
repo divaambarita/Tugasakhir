@@ -3,6 +3,7 @@ import {
   createBottomTabNavigator,
   type BottomTabBarProps,
 } from '@react-navigation/bottom-tabs';
+import {mobileTabScreenOptions} from '../options';
 
 import {AppBottomTabBar} from '../../components/AppBottomTabBar';
 
@@ -30,9 +31,7 @@ const renderTabBar = (props: BottomTabBarProps) => (
 
 export function AdminTabsNavigator(): React.JSX.Element {
   return (
-    <Tab.Navigator
-      tabBar={renderTabBar}
-      screenOptions={{headerTitleAlign: 'center'}}>
+    <Tab.Navigator tabBar={renderTabBar} screenOptions={mobileTabScreenOptions}>
       <Tab.Screen
         name="AdminHome"
         component={AdminHomeStackNavigator}

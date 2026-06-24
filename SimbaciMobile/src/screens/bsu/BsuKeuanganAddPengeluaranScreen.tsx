@@ -1,9 +1,18 @@
 import React from 'react';
-import {ActivityIndicator, Alert, StyleSheet, Text, View} from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import {launchImageLibrary} from 'react-native-image-picker';
 
 import {useAuth} from '../../auth/AuthContext';
+import {uploadSingleImage} from '../../api/fileUpload';
 import {
   createPengeluaran,
   type CreatePengeluaranRequest,
@@ -32,6 +41,7 @@ export function BsuKeuanganAddPengeluaranScreen(): React.JSX.Element {
   const [saldo, setSaldo] = React.useState('');
   const [bukti, setBukti] = React.useState('');
 
+  const [uploading, setUploading] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -39,6 +49,65 @@ export function BsuKeuanganAddPengeluaranScreen(): React.JSX.Element {
     const id = Number(user?.idAkun);
     return Number.isFinite(id) ? id : NaN;
   }, [user?.idAkun]);
+
+  const pickAndUploadBukti = async () => {
+    if (!user) {
+      return;
+    }
+
+    setError(null);
+
+    let result: Awaited<ReturnType<typeof launchImageLibrary>>;
+    try {
+      result = await launchImageLibrary({
+        mediaType: 'photo',
+        selectionLimit: 1,
+      });
+    } catch {
+      setError('Fitur pilih foto tidak dapat dibuka. Silakan coba lagi.');
+      return;
+    }
+
+    if (result.didCancel) {
+      return;
+    }
+
+    const asset = result.assets?.[0];
+    if (!asset?.uri) {
+      setError('Foto bukti tidak berhasil dipilih.');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const uploadRes = await uploadSingleImage(
+        {
+          uri: asset.uri,
+          fileName: asset.fileName,
+          type: asset.type,
+        },
+        'bukti-pengeluaran',
+      );
+
+      if (!uploadRes.success) {
+        setError(uploadRes.message ?? 'Gagal mengunggah bukti pengeluaran.');
+        return;
+      }
+
+      const url = uploadRes.data?.[0]?.path;
+      if (!url) {
+        setError('Hasil unggahan bukti tidak dapat dibaca.');
+        return;
+      }
+
+      setBukti(url);
+      Alert.alert('Berhasil', 'Bukti pengeluaran berhasil diunggah.');
+    } catch {
+      setError('Gagal mengunggah bukti pengeluaran. Silakan coba lagi.');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const onSubmit = async () => {
     if (!user) {
@@ -72,8 +141,8 @@ export function BsuKeuanganAddPengeluaranScreen(): React.JSX.Element {
       return;
     }
 
-    if (buktiTrim.length < 3) {
-      setError('Bukti minimal 3 karakter.');
+    if (!buktiTrim) {
+      setError('Bukti pengeluaran wajib dipilih.');
       return;
     }
 
@@ -95,6 +164,8 @@ export function BsuKeuanganAddPengeluaranScreen(): React.JSX.Element {
 
       Alert.alert('Berhasil', 'Pengeluaran berhasil disimpan.');
       navigation.goBack();
+    } catch {
+      setError('Gagal menyimpan pengeluaran. Silakan coba lagi.');
     } finally {
       setSubmitting(false);
     }
@@ -112,7 +183,7 @@ export function BsuKeuanganAddPengeluaranScreen(): React.JSX.Element {
   }
 
   return (
-    <Screen>
+    <Screen scroll>
       {error ? <InlineAlert message={error} /> : null}
 
       <Card>
@@ -132,19 +203,42 @@ export function BsuKeuanganAddPengeluaranScreen(): React.JSX.Element {
           keyboardType="numeric"
           placeholder="Contoh: 25000"
         />
-        <AppTextField
-          label="Bukti"
-          value={bukti}
-          onChangeText={setBukti}
-          placeholder="Contoh: Nota #123"
-        />
+        <View style={styles.proofSection}>
+          <Text style={styles.proofLabel}>Bukti Pengeluaran</Text>
+          <Text style={styles.proofHelp}>
+            Pilih foto nota atau struk pengeluaran yang terlihat jelas.
+          </Text>
+
+          {bukti ? (
+            <Image
+              source={{uri: bukti}}
+              style={styles.proofImage}
+              resizeMode="cover"
+              accessibilityLabel="Pratinjau bukti pengeluaran"
+            />
+          ) : (
+            <View style={styles.proofPlaceholder}>
+              <Text style={styles.proofPlaceholderText}>
+                Belum ada bukti yang dipilih
+              </Text>
+            </View>
+          )}
+
+          <AppButton
+            title={bukti ? 'Ganti Bukti' : 'Pilih Bukti'}
+            onPress={pickAndUploadBukti}
+            loading={uploading}
+            disabled={uploading || submitting}
+            variant="secondary"
+          />
+        </View>
 
         <View style={styles.actions}>
           <AppButton
             title="Simpan"
             onPress={onSubmit}
             loading={submitting}
-            disabled={submitting}
+            disabled={submitting || uploading}
           />
         </View>
       </Card>
@@ -167,6 +261,40 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '900',
     color: theme.colors.foreground,
+  },
+  proofSection: {
+    marginTop: theme.spacing.sm,
+    gap: theme.spacing.sm,
+  },
+  proofLabel: {
+    ...theme.typography.label,
+    color: theme.colors.foreground,
+  },
+  proofHelp: {
+    ...theme.typography.caption,
+    color: theme.colors.muted,
+  },
+  proofImage: {
+    width: '100%',
+    height: 190,
+    borderRadius: theme.radius.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.surfaceVariant,
+  },
+  proofPlaceholder: {
+    height: 120,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: theme.radius.md,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: theme.colors.inputBorder,
+    backgroundColor: theme.colors.surfaceVariant,
+  },
+  proofPlaceholderText: {
+    ...theme.typography.caption,
+    color: theme.colors.muted,
   },
   actions: {
     marginTop: theme.spacing.md,

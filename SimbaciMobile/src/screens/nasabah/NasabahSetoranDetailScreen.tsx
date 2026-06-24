@@ -15,14 +15,14 @@ import {
   getTransaksiDetailByDate,
   type TransaksiDetailRow,
 } from '../../api/transaksi';
-import type {NasabahSaldoStackParamList} from '../../navigation/stacks/NasabahSaldoStackNavigator';
+import type {NasabahSetoranStackParamList} from '../../navigation/stacks/NasabahSetoranStackNavigator';
 
 import {Card} from '../../components/ui/Card';
 import {InlineAlert} from '../../components/ui/InlineAlert';
 import {Screen} from '../../components/ui/Screen';
 import {theme} from '../../components/ui/theme';
 
-type Route = RouteProp<NasabahSaldoStackParamList, 'NasabahSetoranDetail'>;
+type Route = RouteProp<NasabahSetoranStackParamList, 'NasabahSetoranDetail'>;
 
 function safeNumber(input: unknown): number {
   const n = typeof input === 'string' ? Number(input) : (input as number);
@@ -158,17 +158,15 @@ export function NasabahSetoranDetailScreen(): React.JSX.Element {
 
           <View style={styles.row}>
             <Text style={styles.label}>Nilai Ekonomi</Text>
-            <Text style={styles.value}>Rp {formatMoney(computedTotalNilai)}</Text>
+            <Text style={styles.value}>
+              Rp {formatMoney(computedTotalNilai)}
+            </Text>
           </View>
         </Card>
 
         {rows.length === 0 ? (
           <Card>
             <Text style={styles.emptyTitle}>Detail belum tersedia</Text>
-            <Text style={styles.emptyDesc}>
-              Detail jenis sampah per setoran belum tersedia untuk role nasabah
-              pada API saat ini.
-            </Text>
           </Card>
         ) : (
           rows.map((r, idx) => {
@@ -180,7 +178,9 @@ export function NasabahSetoranDetailScreen(): React.JSX.Element {
             const nilai = safeNumber((r as any).totalhargasampah);
 
             return (
-              <Card key={`${r.transaksiId}-${r.jenisSampahId}-${idx}`} style={styles.card}>
+              <Card
+                key={`${r.transaksiId}-${r.jenisSampahId}-${idx}`}
+                style={styles.card}>
                 <Text style={styles.cardTitle}>{jenis}</Text>
 
                 <View style={styles.row}>

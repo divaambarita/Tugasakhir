@@ -1,7 +1,12 @@
 import React from 'react';
-import {Button, StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, Text, View} from 'react-native';
 
 import {useAuth} from '../auth/AuthContext';
+import {AppButton} from '../components/ui/AppButton';
+import {Card} from '../components/ui/Card';
+import {Screen} from '../components/ui/Screen';
+import {SectionTitle} from '../components/ui/SectionTitle';
+import {theme} from '../components/ui/theme';
 
 export function RoleHomeScreen({
   title,
@@ -13,40 +18,55 @@ export function RoleHomeScreen({
   const {user, logout} = useAuth();
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.subtitle}>
-        Login sebagai: {user?.roleName ?? '-'}
-      </Text>
-      <Text style={styles.subtitle}>Nama: {user?.nama ?? '-'}</Text>
-      <Text style={styles.subtitle}>No. Telp: {user?.noTelp ?? '-'}</Text>
+    <Screen scroll>
+      <SectionTitle
+        title={title}
+        subtitle={`Login sebagai ${user?.roleName ?? '-'}`}
+      />
+
+      <Card style={styles.card}>
+        <Text style={styles.label}>Nama</Text>
+        <Text style={styles.value}>{user?.nama ?? '-'}</Text>
+
+        <View style={styles.divider} />
+
+        <Text style={styles.label}>No. Telp</Text>
+        <Text style={styles.value}>{user?.noTelp ?? '-'}</Text>
+      </Card>
 
       {children ? <View style={styles.section}>{children}</View> : null}
 
       <View style={styles.actions}>
-        <Button title="Logout" onPress={logout} />
+        <AppButton title="Logout" onPress={logout} variant="secondary" />
       </View>
-    </View>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
+  card: {
+    gap: theme.spacing.xs,
   },
-  title: {
-    fontSize: 20,
-    fontWeight: '700',
-    marginBottom: 10,
+  label: {
+    color: theme.colors.muted,
+    fontWeight: '800',
   },
-  subtitle: {
-    marginBottom: 6,
+  value: {
+    color: theme.colors.foreground,
+    fontSize: 16,
+    lineHeight: 22,
+    fontWeight: '900',
+  },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: theme.colors.outline,
+    marginVertical: theme.spacing.sm,
   },
   actions: {
-    marginTop: 16,
+    marginTop: theme.spacing.md,
   },
   section: {
-    marginTop: 16,
+    marginTop: theme.spacing.md,
+    gap: theme.spacing.sm,
   },
 });

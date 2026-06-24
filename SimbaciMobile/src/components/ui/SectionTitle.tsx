@@ -23,14 +23,14 @@ export function SectionTitle({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: theme.spacing.sm,
+    marginBottom: theme.spacing.md,
   },
   title: {
     ...theme.typography.titleLarge,
-    color: theme.colors.primary,
+    color: theme.colors.foreground,
   },
   subtitle: {
-    marginTop: 4,
+    marginTop: theme.spacing.xs,
     ...theme.typography.body,
     color: theme.colors.onSurfaceVariant,
     fontWeight: '600',

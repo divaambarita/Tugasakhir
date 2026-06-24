@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import Svg, {G, Line, Rect, Text as SvgText} from 'react-native-svg';
 
 import {useAuth} from '../../auth/AuthContext';
 import {
@@ -24,19 +23,15 @@ import {InlineAlert} from '../../components/ui/InlineAlert';
 import {Screen} from '../../components/ui/Screen';
 import {SectionTitle} from '../../components/ui/SectionTitle';
 import {theme} from '../../components/ui/theme';
+import {
+  CategoryProductionChart,
+  MonitoringPieChart,
+  PIE_COLORS,
+  WASTE_CATEGORIES as categories,
+  type CategoryMonthPoint,
+} from '../../components/monitoring/CategoryProductionChart';
 
 type Nav = NativeStackNavigationProp<BsuMonitoringStackParamList>;
-
-const categories = [
-  'Limbah B3',
-  'Sampah Organik (Mudah Terurai)',
-  'Sampah Anorganik (Plastik)',
-  'Sampah Anorganik (Kertas)',
-  'Sampah Anorganik (Logam)',
-  'Sampah Anorganik (Kaca)',
-  'Sampah Anorganik (Karet)',
-  'Sampah Anorganik (Tekstil)',
-] as const;
 
 type MonthKey = {
   year: number;
@@ -188,140 +183,62 @@ function buildYearSeries(
   return points;
 }
 
-function GroupedBarChart({
-  titleLeft,
-  titleRight,
+function buildCategoryYearSeries(
+  map: BsuSampahMonitoring['beratPerKategoriByMonthYear'] | undefined,
+  year: number,
+): CategoryMonthPoint[] {
+  if (!map) {
+    return [];
+  }
+
+  return getAvailableMonths(map)
+    .filter(month => month.year === year)
+    .map(month => ({
+      label: monthNameId(month.month).slice(0, 3),
+      byCategory: sumMonthTotals(map, year, month.month).byCategory,
+    }));
+}
+
+function MonthlyMetricPieCharts({
   points,
 }: {
-  titleLeft: string;
-  titleRight: string;
   points: MonthPoint[];
 }): React.JSX.Element {
-  const height = 280;
-  const width = 1000;
-  const paddingLeft = 40;
-  const paddingBottom = 36;
-  const paddingTop = 44;
-  const chartW = width - paddingLeft - 20;
-  const chartH = height - paddingTop - paddingBottom;
-  const n = Math.max(points.length, 1);
-
-  const maxValue = Math.max(
-    1,
-    ...points.map(p => Math.max(safeNumber(p.beratKg), safeNumber(p.emisiKg))),
+  const productionSlices = points.map((point, index) => ({
+    label: monthNameId(Number(point.label)),
+    value: safeNumber(point.beratKg),
+    color: PIE_COLORS[index % PIE_COLORS.length],
+  }));
+  const emissionSlices = points.map((point, index) => ({
+    label: monthNameId(Number(point.label)),
+    value: safeNumber(point.emisiKg),
+    color: PIE_COLORS[index % PIE_COLORS.length],
+  }));
+  const totalProduction = productionSlices.reduce(
+    (total, slice) => total + slice.value,
+    0,
+  );
+  const totalEmission = emissionSlices.reduce(
+    (total, slice) => total + slice.value,
+    0,
   );
 
-  const groupW = chartW / n;
-  const barW = Math.max(6, groupW * 0.28);
-  const gap = Math.max(4, groupW * 0.06);
-
-  const toY = (value: number) => paddingTop + (1 - value / maxValue) * chartH;
-
   return (
-    <View style={styles.chartWrapper}>
-      <Svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`}>
-        <G>
-          <Rect x={0} y={0} width={width} height={height} fill="transparent" />
-
-          {/* Axis */}
-          <Line
-            x1={paddingLeft}
-            y1={height - paddingBottom}
-            x2={width - 20}
-            y2={height - paddingBottom}
-            stroke={theme.colors.border}
-            strokeWidth={2}
-          />
-          <Line
-            x1={paddingLeft}
-            y1={paddingTop}
-            x2={paddingLeft}
-            y2={height - paddingBottom}
-            stroke={theme.colors.border}
-            strokeWidth={2}
-          />
-
-          {/* Legend */}
-          <Rect
-            x={paddingLeft}
-            y={10}
-            width={12}
-            height={12}
-            fill={theme.colors.primary}
-          />
-          <SvgText
-            x={paddingLeft + 18}
-            y={20}
-            fontSize={12}
-            fontWeight="700"
-            fill={theme.colors.muted}>
-            {titleLeft}
-          </SvgText>
-          <Rect
-            x={paddingLeft + 230}
-            y={10}
-            width={12}
-            height={12}
-            fill={theme.colors.accent}
-          />
-          <SvgText
-            x={paddingLeft + 248}
-            y={20}
-            fontSize={12}
-            fontWeight="700"
-            fill={theme.colors.muted}>
-            {titleRight}
-          </SvgText>
-
-          {/* Bars */}
-          {points.map((p, i) => {
-            const xCenter = paddingLeft + i * groupW + groupW / 2;
-
-            const beratV = Math.max(0, safeNumber(p.beratKg));
-            const emisiV = Math.max(0, safeNumber(p.emisiKg));
-
-            const beratY = toY(beratV);
-            const emisiY = toY(emisiV);
-            const baseY = height - paddingBottom;
-
-            const beratH = Math.max(0, baseY - beratY);
-            const emisiH = Math.max(0, baseY - emisiY);
-
-            const xLeft = xCenter - barW - gap / 2;
-            const xRight = xCenter + gap / 2;
-
-            return (
-              <G key={`${p.label}-${i}`}>
-                <Rect
-                  x={xLeft}
-                  y={beratY}
-                  width={barW}
-                  height={beratH}
-                  fill={theme.colors.primary}
-                  rx={4}
-                />
-                <Rect
-                  x={xRight}
-                  y={emisiY}
-                  width={barW}
-                  height={emisiH}
-                  fill={theme.colors.accent}
-                  rx={4}
-                />
-                <SvgText
-                  x={xCenter}
-                  y={height - 10}
-                  fontSize={11}
-                  fontWeight="700"
-                  fill={theme.colors.muted}
-                  textAnchor="middle">
-                  {p.label}
-                </SvgText>
-              </G>
-            );
-          })}
-        </G>
-      </Svg>
+    <View style={styles.monthlyPieGroup}>
+      <View>
+        <Text style={styles.monthlyPieTitle}>Produksi per Bulan</Text>
+        <MonitoringPieChart
+          slices={productionSlices}
+          totalText={`${totalProduction.toLocaleString('id-ID')} kg`}
+        />
+      </View>
+      <View>
+        <Text style={styles.monthlyPieTitle}>Emisi per Bulan</Text>
+        <MonitoringPieChart
+          slices={emissionSlices}
+          totalText={`${totalEmission.toFixed(2)} kg`}
+        />
+      </View>
     </View>
   );
 }
@@ -510,6 +427,12 @@ export function BsuMonitoringScreen(): React.JSX.Element {
     [filterYear, sampah],
   );
 
+  const categoryYearSeries = React.useMemo(
+    () =>
+      buildCategoryYearSeries(sampah?.beratPerKategoriByMonthYear, filterYear),
+    [filterYear, sampah],
+  );
+
   const toggleDropdown = (target: 'year' | 'month') => {
     setOpenDropdown(prev => (prev === target ? null : target));
   };
@@ -545,11 +468,11 @@ export function BsuMonitoringScreen(): React.JSX.Element {
       {error ? <InlineAlert message={error} /> : null}
 
       <SectionTitle
-        title="Monitoring Bank Sampah BSU Mobile"
+        title="Ringkasan BSU"
         subtitle={
           user?.nama
-            ? `Periode: ${periodLabel} • ${user.nama}`
-            : `Periode: ${periodLabel}`
+            ? `${user.nama} • Periode ${periodLabel}`
+            : `Periode ${periodLabel}`
         }
       />
 
@@ -668,16 +591,25 @@ export function BsuMonitoringScreen(): React.JSX.Element {
 
       <Card style={styles.sectionCard}>
         <Text style={styles.sectionCardTitle}>
-          Grafik Produksi Sampah dan Emisi Karbon
+          Distribusi Produksi Sampah dan Emisi Karbon
         </Text>
+        <Text style={styles.sectionCardSubtitle}>Tahun {filterYear}</Text>
         {yearSeries.length === 0 ? (
           <Text style={styles.emptyText}>Data grafik belum tersedia.</Text>
         ) : (
-          <GroupedBarChart
-            titleLeft="Berat (kg)"
-            titleRight="Emisi (kg CO2-eq)"
-            points={yearSeries}
-          />
+          <MonthlyMetricPieCharts points={yearSeries} />
+        )}
+      </Card>
+
+      <Card style={styles.sectionCard}>
+        <Text style={styles.sectionCardTitle}>
+          Komposisi Produksi Sampah per Kategori
+        </Text>
+        <Text style={styles.sectionCardSubtitle}>Tahun {filterYear}</Text>
+        {categoryYearSeries.length === 0 ? (
+          <Text style={styles.emptyText}>Data grafik belum tersedia.</Text>
+        ) : (
+          <CategoryProductionChart points={categoryYearSeries} />
         )}
       </Card>
 
@@ -699,6 +631,25 @@ export function BsuMonitoringScreen(): React.JSX.Element {
               </Card>
             );
           })}
+        </View>
+      </Card>
+
+      <Card style={styles.sectionCard}>
+        <Text style={styles.sectionCardTitle}>
+          Total Emisi Karbon per Kategori
+        </Text>
+        <Text style={styles.sectionCardSubtitle}>{periodLabel}</Text>
+        <View style={styles.categoryGrid}>
+          {categories.map(kategori => (
+            <Card
+              key={kategori}
+              style={[styles.categoryCard, styles.statCardHalf]}>
+              <Text style={styles.categoryTitle}>{kategori}</Text>
+              <Text style={styles.emissionCategoryValue}>
+                {formatCarbonKg(emisiAgg.byCategory[kategori])}
+              </Text>
+            </Card>
+          ))}
         </View>
       </Card>
     </Screen>
@@ -844,15 +795,24 @@ const styles = StyleSheet.create({
     color: theme.colors.foreground,
     marginBottom: theme.spacing.sm,
   },
+  sectionCardSubtitle: {
+    marginTop: -theme.spacing.xs,
+    marginBottom: theme.spacing.sm,
+    color: theme.colors.muted,
+    fontWeight: '700',
+  },
   emptyText: {
     color: theme.colors.muted,
     fontWeight: '700',
   },
-  chartWrapper: {
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radius.md,
-    overflow: 'hidden',
+  monthlyPieGroup: {
+    gap: theme.spacing.md,
+  },
+  monthlyPieTitle: {
+    marginTop: theme.spacing.sm,
+    color: theme.colors.foreground,
+    fontWeight: '900',
+    textAlign: 'center',
   },
   categoryGrid: {
     flexDirection: 'row',
@@ -871,6 +831,13 @@ const styles = StyleSheet.create({
     marginTop: 6,
     fontSize: 14,
     fontWeight: '900',
-    color: theme.colors.foreground,
+    color: theme.colors.accent,
+  },
+  emissionCategoryValue: {
+    marginTop: 6,
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '900',
+    color: theme.colors.accent,
   },
 });

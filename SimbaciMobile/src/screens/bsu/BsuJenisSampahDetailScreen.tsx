@@ -1,11 +1,12 @@
 import React from 'react';
 import {Alert, StyleSheet, View} from 'react-native';
-import {useRoute} from '@react-navigation/native';
+import {useNavigation, useRoute} from '@react-navigation/native';
 import type {RouteProp} from '@react-navigation/native';
+import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 
 import {useAuth} from '../../auth/AuthContext';
 import {deleteJenisSampah, upsertHargaSampahBsu} from '../../api/jenisSampah';
-import type {BsuHomeStackParamList} from '../../navigation/stacks/BsuHomeStackNavigator';
+import type {BsuHargaSampahStackParamList} from '../../navigation/stacks/BsuHargaSampahStackNavigator';
 import {AppButton} from '../../components/ui/AppButton';
 import {AppTextField} from '../../components/ui/AppTextField';
 import {Card} from '../../components/ui/Card';
@@ -13,10 +14,12 @@ import {InlineAlert} from '../../components/ui/InlineAlert';
 import {Screen} from '../../components/ui/Screen';
 import {theme} from '../../components/ui/theme';
 
-type R = RouteProp<BsuHomeStackParamList, 'BsuJenisSampahDetail'>;
+type R = RouteProp<BsuHargaSampahStackParamList, 'BsuJenisSampahDetail'>;
+type Nav = NativeStackNavigationProp<BsuHargaSampahStackParamList>;
 
 export function BsuJenisSampahDetailScreen(): React.JSX.Element {
   const route = useRoute<R>();
+  const navigation = useNavigation<Nav>();
   const {user} = useAuth();
 
   const {idJenisSampah} = route.params;
@@ -128,8 +131,11 @@ export function BsuJenisSampahDetailScreen(): React.JSX.Element {
                 setError(res.message ?? 'Gagal menghapus data.');
                 return;
               }
-              Alert.alert('Sukses', 'Harga BSU berhasil dihapus.');
-              setHargaBsuText('');
+              navigation.goBack();
+              Alert.alert(
+                'Berhasil',
+                'Jenis sampah berhasil dihapus dari daftar harga BSU.',
+              );
             } finally {
               setSubmitting(false);
             }

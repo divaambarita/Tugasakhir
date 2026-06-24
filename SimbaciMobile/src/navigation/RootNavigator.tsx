@@ -12,6 +12,8 @@ import {NasabahTabsNavigator} from './tabs/NasabahTabsNavigator';
 import {VolunteerTabsNavigator} from './tabs/VolunteerTabsNavigator';
 import {BsuRejectedScreen} from '../screens/BsuRejectedScreen';
 import {WebOnlyRoleScreen} from '../screens/WebOnlyRoleScreen';
+import {mobileStackScreenOptions} from './options';
+import {theme} from '../components/ui/theme';
 
 export type RootStackParamList = {
   Login: undefined;
@@ -62,7 +64,9 @@ export function RootNavigator(): React.JSX.Element {
 
   if (user.roleName === 'bsu' && user.status === 'Rejected') {
     return (
-      <Stack.Navigator key="bsu-rejected">
+      <Stack.Navigator
+        key="bsu-rejected"
+        screenOptions={mobileStackScreenOptions}>
         <Stack.Screen
           name="App"
           component={BsuRejectedScreen}
@@ -88,5 +92,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: theme.colors.background,
   },
 });
